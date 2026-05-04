@@ -2,26 +2,324 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   ThailandGPT — Editorial Thai Luxury Design System
+   Aman × Monocle × Bloomberg Terminal
+   ============================================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surfaces */
+  --bg: #F5EFE5;
+  --surface: #FBF8F3;
+  --surface-elevated: #FFFFFF;
+  --fg: #1A1612;
+  --fg-soft: #3A322A;
+  --fg-muted: #7A7264;
+  --border: #D8CFBE;
+  --border-strong: #B8AE99;
+
+  /* Brand */
+  --emerald: #0F3D2E;
+  --emerald-base: #1B5942;
+  --amber: #C8932E;
+  --amber-soft: #E5BD6A;
+  --terracotta: #A04E2C;
+
+  /* Semantic */
+  --accent: var(--emerald);
+  --accent-warm: var(--amber);
+
+  /* Editorial micro-tokens */
+  --line-thin: 0.5px solid var(--border);
+  --line-strong: 1px solid var(--ink);
+  --rule: 1px solid var(--border-strong);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ============================================================
+   Base reset & typography
+   ============================================================ */
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-instrument), var(--font-plex-thai), system-ui, sans-serif;
+  font-feature-settings: "ss01", "ss02", "cv11";
+  font-variant-numeric: oldstyle-nums proportional-nums;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+/* Atmospheric grain across the whole canvas — adds depth to flat color */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.10 0 0 0 0 0.08 0 0 0 0 0.07 0 0 0 0.4 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
+  opacity: 0.4;
+  mix-blend-mode: multiply;
+  z-index: 0;
 }
+
+main, header, footer { position: relative; z-index: 1; }
+
+/* ============================================================
+   Typographic primitives
+   ============================================================ */
+
+.font-display {
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-feature-settings: "ss01", "ss02", "cv05";
+  font-variation-settings: "opsz" 144, "SOFT" 30, "WONK" 1;
+}
+
+.eyebrow {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.figure-num {
+  font-family: var(--font-jetbrains), monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum", "ss01";
+  letter-spacing: -0.02em;
+}
+
+/* ============================================================
+   Decorative — gradient mesh atmosphere
+   ============================================================ */
+
+.atmosphere {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.atmosphere::before,
+.atmosphere::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.55;
+}
+
+.atmosphere::before {
+  width: 60vw;
+  height: 60vw;
+  top: -20vw;
+  right: -15vw;
+  background: radial-gradient(circle at 30% 40%, rgba(200, 147, 46, 0.42), transparent 65%);
+  animation: drift 28s ease-in-out infinite;
+}
+
+.atmosphere::after {
+  width: 55vw;
+  height: 55vw;
+  bottom: -25vw;
+  left: -10vw;
+  background: radial-gradient(circle at 60% 50%, rgba(15, 61, 46, 0.35), transparent 65%);
+  animation: drift 36s ease-in-out infinite reverse;
+}
+
+@keyframes drift {
+  0%, 100% { transform: translate3d(0,0,0) scale(1); }
+  50% { transform: translate3d(3%, -4%, 0) scale(1.06); }
+}
+
+/* ============================================================
+   Components — editorial primitives
+   ============================================================ */
+
+.hairline {
+  border-top: var(--line-thin);
+}
+
+.hairline-emerald {
+  border-top: 1px solid var(--emerald);
+  opacity: 0.4;
+}
+
+.section-marker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.section-marker::before {
+  content: "";
+  display: inline-block;
+  width: 1.5rem;
+  height: 1px;
+  background: currentColor;
+}
+
+/* Blueprint rule — for editorial spacing */
+.editorial-rule {
+  position: relative;
+  padding-top: 1.25rem;
+}
+
+.editorial-rule::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--fg);
+  opacity: 0.85;
+}
+
+/* ============================================================
+   Buttons — editorial style
+   ============================================================ */
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.875rem 1.625rem;
+  background: var(--emerald);
+  color: var(--surface);
+  font-family: var(--font-instrument), sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--emerald);
+  border-radius: 999px;
+  transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-primary:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 32px -12px rgba(15, 61, 46, 0.5);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.25rem;
+  color: var(--fg);
+  font-family: var(--font-instrument), sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  transition: all 0.4s ease;
+  cursor: pointer;
+}
+
+.btn-ghost:hover {
+  border-color: var(--border-strong);
+  background: var(--surface);
+}
+
+/* ============================================================
+   Tier badges — Bloomberg Terminal aesthetic
+   ============================================================ */
+
+.tier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.625rem;
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: 2px;
+}
+
+.tier-elite { background: var(--emerald); color: var(--amber-soft); }
+.tier-pro { background: rgba(15, 61, 46, 0.08); color: var(--emerald); border: 1px solid var(--emerald); }
+.tier-trusted { background: rgba(200, 147, 46, 0.12); color: var(--amber-deep); border: 1px solid var(--amber); }
+.tier-new { background: var(--surface); color: var(--fg-muted); border: 1px solid var(--border-strong); }
+
+/* ============================================================
+   Editorial card
+   ============================================================ */
+
+.card-editorial {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+}
+
+.card-editorial:hover {
+  border-color: var(--ink);
+  background: var(--surface-elevated);
+  transform: translateY(-2px);
+}
+
+/* ============================================================
+   Selection
+   ============================================================ */
+
+::selection {
+  background: var(--emerald);
+  color: var(--amber-soft);
+}
+
+/* ============================================================
+   Scrollbar (subtle editorial)
+   ============================================================ */
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border: 2px solid var(--bg);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--fg-muted); }
+
+/* ============================================================
+   Utilities
+   ============================================================ */
+
+.text-balance { text-wrap: balance; }
+.text-pretty { text-wrap: pretty; }
+
+/* Marquee mask for ticker */
+.mask-fade-x {
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+/* Stagger animation utility */
+.stagger > * {
+  animation: fade-up 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.stagger > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger > *:nth-child(2) { animation-delay: 0.18s; }
+.stagger > *:nth-child(3) { animation-delay: 0.32s; }
+.stagger > *:nth-child(4) { animation-delay: 0.45s; }
+.stagger > *:nth-child(5) { animation-delay: 0.6s; }
+.stagger > *:nth-child(6) { animation-delay: 0.75s; }
