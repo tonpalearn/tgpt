@@ -47,7 +47,7 @@ insert into buyers (id, name, country, country_code, industry, size, contact_rol
 ('buy-015','Helsinki Design Living','Finland','FI','Home Goods','SME','Buyer','Nordic home + tableware boutique.',false,null,76,3,4.4,2,55000,array['craft','textile']::supplier_category_t[],8000,30000),
 ('buy-016','Sao Paulo Premium Foods','Brazil','BR','Specialty Food','Mid-Market','Buyer','Premium grocery + restaurant supply.',true,now() - interval '70 days',79,3,4.5,2,68000,array['agriculture','beverage']::supplier_category_t[],10000,45000),
 ('buy-017','New York Tea Importers','United States','US','Specialty Tea','SME','Founder','Direct-trade specialty tea importer.',true,now() - interval '120 days',90,7,4.8,6,168000,array['beverage']::supplier_category_t[],8000,35000),
-('buy-018','Hong Kong Fine Goods','Hong Kong','HK','Luxury Retail','Mid-Market','Sourcing Director','Cross-border luxury + heritage retail.',true,now() - interval '180 days',93,10,4.8,8,520000,array['craft','silk','textile']::supplier_category_t[],20000,90000),
+('buy-018','Hong Kong Fine Goods','Hong Kong','HK','Luxury Retail','Mid-Market','Sourcing Director','Cross-border luxury + heritage retail.',true,now() - interval '180 days',93,10,4.8,8,520000,array['craft','textile']::supplier_category_t[],20000,90000),
 ('buy-019','Stockholm Conscious Trade','Sweden','SE','Ethical Fashion','SME','Founder','Slow-fashion online retailer.',true,now() - interval '100 days',85,5,4.6,4,98000,array['textile','craft']::supplier_category_t[],8000,32000),
 ('buy-020','Mexico City Casa Mercado','Mexico','MX','Premium Grocery','Mid-Market','Category Manager','Premium grocery chain, CDMX + Monterrey.',false,null,73,2,4.2,1,42000,array['agriculture','beverage']::supplier_category_t[],10000,40000);
 
