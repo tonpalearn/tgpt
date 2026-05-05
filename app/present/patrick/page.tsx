@@ -173,8 +173,8 @@ const WHEEL = [
     textColor: "text-amber-700",
     bgLight: "bg-amber-50",
     border: "border-amber-300",
-    gives: ["Technology — build + maintain platform", "Product thinking + UX/PM", "2 เดือน full-time execution", "Long-term commitment (4yr vest)"],
-    gets: ["Service fee ฿600K (Stage 1)", "Equity 12% (4yr/1yr cliff)", "Revenue Share 3% × 36 เดือน", "Stage 2: CTO + ฿180K/เดือน"],
+    gives: ["Technology — build + maintain platform", "Product thinking + UX/PM", "2 เดือน full-time execution", "Phase 0 Discovery ฟรี (cover เอง)", "Long-term commitment (4yr vest)"],
+    gets: ["Service fee ฿500K (ลดจาก ฿600K market)", "Equity 12% (4yr/1yr cliff)", "Revenue Share 3% × 36 เดือน", "Stage 2: CTO + ฿180K/เดือน"],
   },
   {
     id: "supplier",
@@ -202,14 +202,73 @@ const WHEEL = [
   },
 ];
 
-// ─── The Ask ──────────────────────────────────────────────────────────────────
-const THE_ASK = [
-  { item: "เงินลงทุน Stage 1", detail: "฿1,300,000 (2 เดือน)", icon: "💰", critical: true },
-  { item: "Network intro — 10 Suppliers แรก", detail: "จาก Patrick's Circle โดยตรง", icon: "🤝", critical: true },
-  { item: "Sign term sheets 3 ฉบับ พร้อมกัน", detail: "Service + Earn-In + Stage 2", icon: "✍️", critical: true },
-  { item: "MOU กับ Suppliers ในวงของ Patrick", detail: "ใช้ credibility Patrick เปิดประตูให้", icon: "📋", critical: true },
-  { item: "Time — ประชุมสัปดาห์ละ 1 ชั่วโมง", detail: "Strategic direction + supplier intro", icon: "🕐", critical: false },
-  { item: "Patience — 2 เดือน build time", detail: "Toni build เต็มที่ ไม่ interrupt", icon: "⏳", critical: false },
+// ─── 3 Requests (เปลี่ยนจาก "The Ask") ────────────────────────────────────────
+// บุญชัย: "ขอ 6 อย่าง พร้อม deadline... รุ่นใหญ่อ่านแล้วรู้สึก ถูก list ทำการบ้าน"
+const REQUESTS = [
+  {
+    num: "01",
+    title: "ฟังที่ผมเสนอ",
+    body: "อ่าน slide ทั้งหมด · ลอง simulate · คุยกับครอบครัว/ที่ปรึกษา\nแล้วบอกผมว่าผม **พลาดอะไร** — ผมไม่กลัวคำวิจารณ์ ผมกลัวการไม่ได้เรียน",
+    color: "border-rose-300 bg-rose-50",
+    badgeColor: "bg-rose-500",
+  },
+  {
+    num: "02",
+    title: "ถ้าพี่เห็นว่าใช้ได้ — เริ่ม Phase 0 ก่อน (2 สัปดาห์, ฿0)",
+    body: "ผม cover เอง · สัมภาษณ์ supplier 5 คน + buyer 5 คน จาก network ของพี่\nถ้า Phase 0 ดี → เซ็น Term Sheet → เริ่ม M1 ฿200K · ถ้าไม่ใช่ → ไม่เสีย ฿1",
+    color: "border-amber-300 bg-amber-50",
+    badgeColor: "bg-amber-500",
+  },
+  {
+    num: "03",
+    title: "ถ้าไม่ใช่ตอนนี้",
+    body: "ขอคำแนะนำว่าผมควร **ปรับยังไง** หรือ ใครที่พี่คิดว่าผมควรไปคุย\nผมเรียนจากพี่ได้แม้ไม่ได้ลงทุนด้วยกัน",
+    color: "border-sage-300 bg-sage-50",
+    badgeColor: "bg-sage-500",
+  },
+];
+
+// ─── 3 Promises (commitment ที่จับต้องได้) ─────────────────────────────────────
+const PROMISES = [
+  {
+    num: "01",
+    title: "ผมจะทำงานเหมือน Patrick Group เป็นบริษัทผมเอง",
+    body: "ทุก decision · ทุก commit · ทุก hire — คิดเหมือนเงินผมอยู่ในนั้น\nไม่ใช่ project — เป็น ownership",
+  },
+  {
+    num: "02",
+    title: "ทุก decision ที่กระทบ brand พี่ — ผมถามก่อนเสมอ",
+    body: "Brand voice · pricing · partnership · public communication\nไม่มี surprise · ไม่มี \"ผมตัดสินไปแล้ว\"",
+  },
+  {
+    num: "03",
+    title: "ถ้าพี่บอกหยุด — ผมหยุดทันที",
+    body: "IP ทุกอย่างเป็นของพี่ตั้งแต่ M1 onwards\nNotion docs · code repo · supplier list — อยู่ใน hand พี่ตลอด",
+  },
+];
+
+// ─── Worst Case + Patrick's Protection (Anant) ────────────────────────────────
+const WORST_CASES = [
+  {
+    case: "M1 ส่งมอบไม่ดี",
+    loss: "฿200,000",
+    mitigation: "พี่ได้ code + spec ใช้ต่อกับทีมอื่นได้ · ผม refund 50% เป็น option ที่พี่เลือก",
+  },
+  {
+    case: "M2 หา supplier ไม่ได้",
+    loss: "+ ฿150,000",
+    mitigation: "พี่หยุดได้ทันที ไม่จ่าย M3 · ผม pivot to consulting deliverable · IP ทุกอย่างยังเป็นของพี่",
+  },
+  {
+    case: "M3 ไม่มี deal ปิดได้",
+    loss: "+ ฿150,000",
+    mitigation: "ผมทำ post-mortem report ฟรี · วิเคราะห์ว่าทำไมไม่ work + recommendation",
+  },
+  {
+    case: "Toni หายไปกลางทาง",
+    loss: "฿0 (เสียเวลาพี่)",
+    mitigation: "Code ใน repo ของพี่ตลอด · push daily · Notion docs · successor brief 5 หน้า",
+  },
 ];
 
 export default function PatrickPitchPage() {
@@ -219,52 +278,159 @@ export default function PatrickPitchPage() {
     <main className="min-h-screen bg-cream">
       <div className="container-soft py-10 space-y-14">
 
-        {/* ── Cover ─────────────────────────────────────────────────────── */}
+        {/* ── Cover (Heart-First — Boonchai's reframe) ──────────────────── */}
         <div className="text-center space-y-4 py-8">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-sage-100 text-sage-700 rounded-full text-sm font-medium">
-            พร้อม Present Patrick · {new Date().toLocaleDateString("th-TH", { year: "numeric", month: "long", day: "numeric" })}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
+            ขอเสนอด้วยความเคารพ · {new Date().toLocaleDateString("th-TH", { year: "numeric", month: "long", day: "numeric" })}
           </div>
-          <h1 className="text-4xl font-semibold text-ink leading-tight">
-            ThailandGPT<br />
-            <span className="text-sage-600">Connection Gateway Platform</span>
+          <h1 className="text-4xl md:text-5xl font-semibold text-ink leading-tight">
+            พี่ Patrick ครับ —<br />
+            <span className="text-sage-600">ขอบคุณที่ให้โอกาสผม</span>
           </h1>
-          <p className="text-ink-muted text-lg max-w-xl mx-auto">
-            สิ่งที่ Toni ต้องการจาก Patrick · สิ่งที่ Patrick จะได้รับ ·<br />
-            Win-Win ทุกมิติ ในทุก Stakeholder
+          <p className="text-ink-muted text-lg max-w-2xl mx-auto">
+            ThailandGPT — ข้อเสนอเพื่อพิจารณา<br />
+            <span className="italic">ไม่มี deadline · ไม่มีแรงกดดัน · ขอความเห็นเป็นหลัก</span>
           </p>
           <div className="flex justify-center gap-3 flex-wrap pt-2">
-            <Link href="#ask" className="btn-primary">สิ่งที่ต้องการจาก Patrick →</Link>
-            <Link href="#wheel" className="btn-secondary">Win-Win Wheel</Link>
+            <Link href="#why" className="btn-primary">ทำไมต้องเป็นพี่ →</Link>
+            <Link href="#promises" className="btn-secondary">ผมสัญญา 3 อย่าง</Link>
           </div>
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════ */}
-        {/* THE ASK                                                          */}
+        {/* WHY PATRICK — Heart-First Anchor (NEW)                          */}
         {/* ═══════════════════════════════════════════════════════════════ */}
-        <section id="ask" className="space-y-5">
+        <section id="why" className="space-y-5">
           <div className="text-center">
-            <h2 className="text-2xl font-semibold text-ink">สิ่งที่ Toni ต้องการจาก Patrick</h2>
-            <p className="text-ink-muted mt-1">ตรงๆ ไม่อ้อม — นี่คือสิ่งที่จำเป็นให้ Project สำเร็จ</p>
+            <h2 className="text-2xl font-semibold text-ink">ทำไมต้องเป็นพี่ Patrick</h2>
+            <p className="text-ink-muted mt-1 italic">ก่อนผมเล่าเรื่อง project — ผมขอเล่าเรื่องพี่ก่อน</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {THE_ASK.map(a => (
-              <div key={a.item} className={`card p-5 flex gap-4 ${a.critical ? "border border-sage-200" : "opacity-80"}`}>
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 ${a.critical ? "bg-sage-50" : "bg-stone-50"}`}>
-                  {a.icon}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              {
+                num: "01",
+                title: "Network ที่เงินซื้อไม่ได้",
+                body: "20 ปีที่พี่สร้างความสัมพันธ์ทั่วโลก — FIFA, Real Madrid, Alibaba\nไม่มีใครใน Thailand ที่มีในระดับนี้ · นี่คือ moat",
+              },
+              {
+                num: "02",
+                title: "Vision ที่ไม่ใช่แค่ profit",
+                body: "พี่พูดเสมอว่า \"Curated Excellence\" — quality มากกว่า quantity\nผมเห็น Patrick Group เป็น gateway Thailand → Global",
+              },
+              {
+                num: "03",
+                title: "Trust ที่ผมไว้วางใจกลับ",
+                body: "พี่ทำให้ผมรู้สึกไม่ใช่ \"ผู้บริหาร\" แต่เป็น \"พี่\"\nนี่หายากในวงการ",
+              },
+            ].map((r) => (
+              <div key={r.num} className="card p-6 border-2 border-amber-200 bg-gradient-to-b from-cream to-amber-50/30 space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-lg font-bold">
+                  {r.num}
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold text-ink">{a.item}</span>
-                    {a.critical && <span className="pill text-xs bg-rose-100 text-rose-700">จำเป็น</span>}
-                  </div>
-                  <p className="text-sm text-ink-muted mt-0.5">{a.detail}</p>
-                </div>
+                <h3 className="font-semibold text-ink text-lg leading-snug">{r.title}</h3>
+                <div className="w-12 h-0.5 bg-amber-500"></div>
+                {r.body.split("\n").map((line, i) => (
+                  <p key={i} className="text-sm text-ink-soft leading-relaxed">{line}</p>
+                ))}
               </div>
             ))}
           </div>
-          <div className="card p-5 bg-ink text-cream text-center space-y-2">
-            <div className="text-lg font-semibold">รวม: ฿1,300,000 + Network + Time</div>
-            <div className="text-cream/70 text-sm">เงิน 2 เดือน · Network ตลอด · เวลา 1 ชั่วโมง/สัปดาห์ — นั่นคือทุกอย่างที่ต้องการจาก Patrick</div>
+          <div className="card p-5 bg-ink text-amber-200 text-center">
+            <div className="text-base italic">
+              &ldquo;ผมไม่ได้เลือก investor — ผมเลือกคนที่ผมอยากเดินด้วยกัน 10 ปี&rdquo;
+            </div>
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* PHASE 0 — DISCOVERY SPRINT (Anant's recommendation, NEW)        */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        <section id="phase0" className="space-y-5">
+          <div className="text-center">
+            <h2 className="text-2xl font-semibold text-ink">Phase 0 — Discovery Sprint</h2>
+            <p className="text-ink-muted mt-1 italic">2 สัปดาห์ · พี่จ่าย ฿0 · ผม cover เอง — เพื่อ confidence ก่อนใช้เงินพี่</p>
+          </div>
+          <div className="card p-6 space-y-4 bg-gradient-to-br from-amber-50 to-cream border-2 border-amber-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                { num: "1", what: "ฟังพี่ก่อน", detail: "1 ชม. กับพี่ — ฟัง vision จริง vs ที่ผม assume", why: "ผม adjust ทุกอย่างตามที่พี่บอก ไม่ใช่ที่ผมคิด" },
+                { num: "2", what: "สัมภาษณ์ Buyer 5 คน", detail: "1 ชม./คน × 5 คน จาก network ของพี่", why: "อะไรคือ pain — ที่ platform ต้องแก้" },
+                { num: "3", what: "สัมภาษณ์ Supplier 5 คน", detail: "1 ชม./คน × 5 คน จาก Patrick&apos;s Circle", why: "อะไรที่ supplier ต้องการ — เพื่อจ่าย commission" },
+                { num: "4", what: "สรุป + Adjust MVP Scope", detail: "10-page report สำหรับพี่ approve", why: "Pivot ก่อน build — Patrick&apos;s risk ลง 70%" },
+              ].map((s) => (
+                <div key={s.num} className="flex gap-3 items-start">
+                  <div className="w-9 h-9 rounded-xl bg-amber-500 text-white font-bold flex items-center justify-center shrink-0">
+                    {s.num}
+                  </div>
+                  <div className="space-y-1">
+                    <div className="font-semibold text-ink">{s.what}</div>
+                    <div className="text-sm text-ink-soft">{s.detail}</div>
+                    <div className="text-xs text-amber-700 italic">→ {s.why}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="border-t border-amber-200 pt-3 text-center text-sm text-amber-800 font-medium">
+              ผม cover cost เอง · พี่จ่าย ฿0 · ได้ confidence ก่อนตัดสินใจ ฿500K
+            </div>
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* WORST CASE + PATRICK'S PROTECTION (Anant's request, NEW)        */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        <section id="protection" className="space-y-5">
+          <div className="text-center">
+            <h2 className="text-2xl font-semibold text-ink">ถ้าทุกอย่างผิดพลาด — พี่เสียอะไร?</h2>
+            <p className="text-ink-muted mt-1 italic">ก่อนพูดเรื่องโอกาส — ผมพูดเรื่อง downside ก่อนเสมอ</p>
+          </div>
+          <div className="card p-0 overflow-hidden">
+            <div className="grid grid-cols-12 gap-0 bg-ink text-amber-300 text-sm font-semibold">
+              <div className="col-span-4 p-3">Worst Case</div>
+              <div className="col-span-2 p-3 text-center">พี่เสีย</div>
+              <div className="col-span-6 p-3">ผมปกป้องพี่ยังไง</div>
+            </div>
+            {WORST_CASES.map((w, i) => (
+              <div key={i} className={`grid grid-cols-12 gap-0 border-t border-stone-100 ${i % 2 === 0 ? "bg-cream" : "bg-white"}`}>
+                <div className="col-span-4 p-3 font-semibold text-rose-700 text-sm">{w.case}</div>
+                <div className="col-span-2 p-3 text-center font-mono font-bold text-ink">{w.loss}</div>
+                <div className="col-span-6 p-3 text-sm text-ink-soft">✓ {w.mitigation}</div>
+              </div>
+            ))}
+          </div>
+          <div className="card p-4 bg-amber-500 text-ink text-center">
+            <span className="font-bold">Real downside = ฿200K + 1 เดือน</span>
+            <span className="text-ink/80"> (ไม่ใช่ ฿500K) — เพราะ milestone control ปกป้องพี่</span>
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* 3 REQUESTS (replaces THE ASK — Boonchai's reframe)              */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        <section id="requests" className="space-y-5">
+          <div className="text-center">
+            <h2 className="text-2xl font-semibold text-ink">ขอความกรุณา 3 อย่าง — เมื่อพี่พร้อม</h2>
+            <p className="text-ink-muted mt-1 italic">ไม่มี deadline · ไม่มี pressure · ขอความเห็นเป็นหลัก</p>
+          </div>
+          <div className="space-y-3">
+            {REQUESTS.map(r => (
+              <div key={r.num} className={`card p-5 border-2 ${r.color} flex gap-4 items-start`}>
+                <div className={`w-14 h-14 rounded-2xl ${r.badgeColor} text-white text-xl font-bold flex items-center justify-center shrink-0`}>
+                  {r.num}
+                </div>
+                <div className="flex-1 space-y-1">
+                  <div className="font-semibold text-ink text-lg">{r.title}</div>
+                  {r.body.split("\n").map((line, i) => {
+                    const parts = line.split("**");
+                    return (
+                      <p key={i} className="text-sm text-ink-soft leading-relaxed">
+                        {parts.map((part, j) => j % 2 === 1 ? <strong key={j} className="text-ink">{part}</strong> : part)}
+                      </p>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -572,8 +738,53 @@ export default function PatrickPitchPage() {
           </div>
         </section>
 
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* 3 PROMISES — Closing Commitment (Boonchai's reframe)            */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        <section id="promises" className="space-y-5">
+          <div className="text-center">
+            <h2 className="text-2xl font-semibold text-ink">ผมสัญญา 3 อย่างกับพี่</h2>
+            <p className="text-ink-muted mt-1 italic">ไม่ใช่ buzzword · เป็น commitment ที่จับต้องได้</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {PROMISES.map(p => (
+              <div key={p.num} className="card p-6 bg-ink text-cream border-2 border-amber-500/30 space-y-3">
+                <div className="w-14 h-14 rounded-2xl bg-amber-500 text-ink text-xl font-bold flex items-center justify-center">
+                  {p.num}
+                </div>
+                <h3 className="font-semibold text-amber-300 text-base leading-snug">{p.title}</h3>
+                <div className="w-12 h-0.5 bg-amber-500"></div>
+                {p.body.split("\n").map((line, i) => (
+                  <p key={i} className="text-sm text-cream/80 italic leading-relaxed">{line}</p>
+                ))}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* CLOSING — Heart-First Final Words                                */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        <section className="card p-10 bg-gradient-to-br from-ink to-sage-900 text-cream text-center space-y-6">
+          <h2 className="text-3xl md:text-4xl font-semibold text-amber-300">
+            ขอบคุณครับ พี่ Patrick
+          </h2>
+          <p className="text-lg text-cream/80">ที่ฟังผมจนถึงหน้าสุดท้าย</p>
+          <div className="w-24 h-0.5 bg-amber-500 mx-auto"></div>
+          <div className="space-y-2 italic text-cream/90 text-base md:text-lg">
+            <p>ผมไม่ได้มาขอเงิน — ผมมาขอ <span className="text-amber-300 font-semibold">ความสัมพันธ์</span></p>
+            <p>ผมไม่ได้มาขายของ — ผมมาเสนอ <span className="text-amber-300 font-semibold">ทางเดิน</span></p>
+            <p>ผมไม่ได้มาเป็น vendor — ผมมาเป็น <span className="text-amber-300 font-semibold">ลูกศิษย์</span></p>
+          </div>
+          <div className="card p-5 bg-ink/50 border border-amber-500/30 max-w-2xl mx-auto">
+            <p className="font-semibold text-amber-300">ถ้าพี่เห็นว่าใช้ได้ — ผมจะเดินด้วยกัน 10 ปี</p>
+            <p className="text-sm text-cream/70 italic mt-1">ถ้าไม่ใช่ — ผมยังขอบคุณที่ให้โอกาส</p>
+          </div>
+          <p className="text-xs text-cream/50">ด้วยความเคารพ · Toni</p>
+        </section>
+
         {/* ── Navigation ────────────────────────────────────────────────── */}
-        <div className="flex gap-3 flex-wrap justify-center">
+        <div className="flex gap-3 flex-wrap justify-center pt-4 border-t border-stone-200">
           <Link href="/reports/commission" className="btn-secondary">Commission Report</Link>
           <Link href="/reports/breakeven" className="btn-secondary">Break-Even Analysis</Link>
           <Link href="/reports/model" className="btn-secondary">Business Model</Link>
