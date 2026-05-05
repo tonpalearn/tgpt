@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "boi:scrape": "tsx scripts/boi-scraper.ts",
+    "boi:ingest": "tsx scripts/boi-scraper.ts --ingest",
+    "embed:boi": "curl -s -X POST http://localhost:3000/api/admin/boi-ingest | npx jq .",
+    "embed:suppliers": "curl -s -X POST http://localhost:3000/api/admin/supplier-embed | npx jq ."
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.3",

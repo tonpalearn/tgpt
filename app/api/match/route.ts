@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { callGemini } from "@/lib/gemini.server";
 import { listSuppliers } from "@/lib/db/queries";
 import { findCitations } from "@/lib/boi-knowledge";
+import { findCitationsVector, findSuppliersVector } from "@/lib/vector-search";
 import type { Supplier, SupplierCategory } from "@/lib/db/types";
 
 // ─── Types ───────────────────────────────────────────────────────────
@@ -274,8 +275,28 @@ export async function POST(req: NextRequest) {
     // Stage 3: Score + match suppliers
     const matched = scoreSuppliers(suppliers, parsed, query);
 
-    // Stage 4: Find citations
-    const citations = findCitations(query, 3);
+    // Stage 4: Find citations — vector search first, keyword fallback
+    const [citations, vectorSupplierHints] = await Promise.all([
+      findCitationsVector(query, 3),
+      findSuppliersVector(query, 5),
+    ]);
+    const usingVectorCitations = citations.some(c => "similarity" in c);
+
+    // Boost supplier scores if vector search found semantic matches
+    if (vectorSupplierHints.length > 0) {
+      const hintMap = new Map(vectorSupplierHints.map(h => [h.supplier_id, h.similarity]));
+      matched.forEach(m => {
+        const boost = hintMap.get(m.id);
+        if (boost !== undefined) {
+          m.score += Math.round(boost * 25); // up to +25 pts for vector relevance
+          m.confidence = Math.min(m.confidence + boost * 0.1, 0.99);
+          if (!m.matchReason.includes("Vector")) {
+            m.matchReason = `Vector match ${(boost * 100).toFixed(0)}% · ` + m.matchReason;
+          }
+        }
+      });
+      matched.sort((a, b) => b.score - a.score);
+    }
 
     // Stage 5: Generate reasoning + cascade with Gemini
     const { cascade, reasoning, latencyMs: cascadeLatency, isMock: cascadeMock } = await generateCascade(query, parsed, citations);
@@ -294,6 +315,8 @@ export async function POST(req: NextRequest) {
         supplierSource,
         supplierCount: suppliers.length,
         usingMockGemini: parseMock || cascadeMock,
+        usingVectorSearch: usingVectorCitations,
+        vectorSupplierHints: vectorSupplierHints.length,
       },
     });
   } catch (err) {

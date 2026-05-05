@@ -25,7 +25,7 @@ type RouterStage = {
 
 const ROUTER_STAGES: RouterStage[] = [
   { id: "parse", step: "1", model: "Gemini Flash", task: "Parse Query (NER + intent)", cost: 0.0001, duration: 600, reason: "Fast + cheap for structured extraction" },
-  { id: "embed", step: "2", model: "text-embedding-3", task: "Embed query → vector", cost: 0.00002, duration: 400, reason: "Standard embedding for similarity search" },
+  { id: "embed", step: "2", model: "text-embedding-004", task: "Embed query → 768-dim vector", cost: 0.00001, duration: 400, reason: "Google text-embedding-004 — free with Gemini API" },
   { id: "rag", step: "3", model: "Supabase pgvector", task: "RAG: BOI + supplier DB", cost: 0, duration: 500, reason: "Local vector search, no LLM cost" },
   { id: "reason", step: "4", model: "Claude Sonnet 4.6", task: "Match reasoning + cite", cost: 0.003, duration: 1400, reason: "Quality reasoning for trust matching" },
   { id: "verify", step: "5", model: "Rule engine", task: "Verify cert + tier", cost: 0, duration: 300, reason: "No LLM — deterministic rules" },
@@ -77,6 +77,8 @@ type ApiResponse = {
     supplierSource: "supabase" | "static";
     supplierCount: number;
     usingMockGemini: boolean;
+    usingVectorSearch?: boolean;
+    vectorSupplierHints?: number;
   };
 };
 
@@ -328,6 +330,9 @@ export default function DemoPage() {
                 </span>
                 <span className="text-emerald-700">
                   Gemini: <span className="font-mono">{apiData.meta.usingMockGemini ? "MOCK (no API key)" : "REAL"}</span>
+                </span>
+                <span className="text-emerald-700">
+                  Vector: <span className="font-mono font-bold">{apiData.meta.usingVectorSearch ? `✓ pgvector (${apiData.meta.vectorSupplierHints ?? 0} supplier hints)` : "keyword fallback"}</span>
                 </span>
               </div>
               {apiData.parsed.category && (

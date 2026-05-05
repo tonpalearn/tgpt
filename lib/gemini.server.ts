@@ -1,6 +1,10 @@
 import "server-only";
 import { getServerEnv, hasGeminiKey } from "./env.server";
 
+// Google text-embedding-004: 768 dims, free with Gemini API key
+const GEMINI_EMBED_URL =
+  "https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent";
+
 /**
  * Server-only Gemini client.
  *
@@ -22,6 +26,34 @@ export interface GeminiResult {
   text: string;
   latencyMs: number;
   isMock: boolean;
+}
+
+/**
+ * Generate a 768-dimensional embedding using Google text-embedding-004.
+ * Returns null (not throws) when API key is missing — callers should fallback to keyword search.
+ */
+export async function embedText(text: string): Promise<number[] | null> {
+  if (!hasGeminiKey()) return null;
+  const { GEMINI_API_KEY } = getServerEnv();
+
+  try {
+    const res = await fetch(`${GEMINI_EMBED_URL}?key=${GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "models/text-embedding-004",
+        content: { parts: [{ text: text.slice(0, 2048) }] }, // API max 2048 tokens
+      }),
+      cache: "no-store",
+    });
+
+    if (!res.ok) return null;
+    type EmbedResp = { embedding?: { values?: number[] } };
+    const json = (await res.json()) as EmbedResp;
+    return json.embedding?.values ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export async function callGemini(opts: GeminiCallOptions): Promise<GeminiResult> {
