@@ -75,4 +75,65 @@ export async function getDealEvents(dealId: string): Promise<DealEvent[]> {
   return data ?? [];
 }
 
+// ─── Search query logging (best-effort, never throws) ────────────────────
+export type SearchLogInput = {
+  query_text: string;
+  side?: "demand" | "supply";
+  parsed_category?: string | null;
+  parsed_product?: string;
+  parsed_destination?: string;
+  parsed_quantity?: string;
+  language?: string;
+  matched_count: number;
+  top_confidence?: number | null;
+  no_match: boolean;
+  meta?: Record<string, unknown>;
+};
+
+export async function logSearch(input: SearchLogInput): Promise<void> {
+  if (!supabase) return;
+  try {
+    await supabase.from("search_queries").insert({
+      query_text: input.query_text,
+      side: input.side ?? "demand",
+      parsed_category: input.parsed_category ?? null,
+      parsed_product: input.parsed_product ?? null,
+      parsed_destination: input.parsed_destination ?? null,
+      parsed_quantity: input.parsed_quantity ?? null,
+      language: input.language ?? null,
+      matched_count: input.matched_count,
+      top_confidence: input.top_confidence ?? null,
+      no_match: input.no_match,
+      meta: input.meta ?? {},
+    });
+  } catch {
+    // silent — table may not exist yet, never break user request
+  }
+}
+
+export type AcquisitionTarget = {
+  parsed_category: string | null;
+  parsed_product: string | null;
+  parsed_destination: string | null;
+  search_count: number;
+  no_match_count: number;
+  avg_top_confidence: number | null;
+  last_searched: string;
+  sample_queries: string[];
+};
+
+export async function getAcquisitionTargets(limit = 20): Promise<AcquisitionTarget[]> {
+  if (!supabase) return [];
+  try {
+    const { data, error } = await supabase
+      .from("acquisition_targets")
+      .select("*")
+      .limit(limit);
+    if (error) return [];
+    return (data as AcquisitionTarget[]) ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export { isSupabaseConfigured };

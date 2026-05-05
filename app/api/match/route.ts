@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { callGemini } from "@/lib/gemini.server";
-import { listSuppliers } from "@/lib/db/queries";
+import { listSuppliers, logSearch } from "@/lib/db/queries";
 import { findCitations } from "@/lib/boi-knowledge";
 import { findCitationsVector, findSuppliersVector } from "@/lib/vector-search";
 import type { Supplier, SupplierCategory } from "@/lib/db/types";
@@ -146,12 +146,15 @@ Be precise. Use Thai supply category taxonomy. If unsure of category, use null.`
     // Heuristic fallback
     const q = query.toLowerCase();
     const parsed: ParsedQuery = {
-      category: q.includes("durian") || q.includes("rice") || q.includes("ทุเรียน") || q.includes("ข้าว") ? "agriculture"
-              : q.includes("shrimp") || q.includes("กุ้ง") ? "seafood"
-              : q.includes("silk") || q.includes("ไหม") ? "textile"
-              : q.includes("tea") || q.includes("coffee") || q.includes("ชา") || q.includes("กาแฟ") ? "beverage"
-              : q.includes("herbal") || q.includes("wellness") || q.includes("สมุนไพร") ? "wellness"
-              : "agriculture",
+      category:
+          /durian|rice|ทุเรียน|ข้าว|fruit|ผลไม้|mango|มะม่วง|rubber|ยาง/i.test(q) ? "agriculture"
+        : /shrimp|prawn|กุ้ง|fish|tuna|seafood|ปลา|ทะเล/i.test(q) ? "seafood"
+        : /silk|ไหม|fabric|textile|ผ้า|cotton|linen/i.test(q) ? "textile"
+        : /tea|coffee|ชา|กาแฟ|beverage|เครื่องดื่ม/i.test(q) ? "beverage"
+        : /herbal|wellness|สมุนไพร|essential.?oil|massage|spa/i.test(q) ? "wellness"
+        : /craft|handicraft|ceramic|เซรามิค|celadon|สังคโลก|pottery|wood|carving|หัตถกรรม|otop/i.test(q) ? "craft"
+        : /manufactur|automotive|electronics|machinery|industrial|chip|semiconductor/i.test(q) ? "manufacturing"
+        : null,
       product: query.slice(0, 100),
       language: /[ก-๙]/.test(query) ? "th" : "en",
     };
@@ -159,18 +162,85 @@ Be precise. Use Thai supply category taxonomy. If unsure of category, use null.`
   }
 }
 
+// ─── Match thresholds ─────────────────────────────────────────────────
+const MIN_CONFIDENCE = 0.55;
+
+// Bilingual / synonym expansion — bridges Thai-English + product synonyms
+// Until pgvector embeddings cover all suppliers, this catches obvious misses
+const SYNONYMS: Record<string, string[]> = {
+  shrimp: ["กุ้ง", "prawn"],
+  กุ้ง: ["shrimp", "prawn"],
+  prawn: ["shrimp", "กุ้ง"],
+  durian: ["ทุเรียน", "monthong", "หมอนทอง"],
+  ทุเรียน: ["durian", "monthong"],
+  rice: ["ข้าว", "jasmine", "hom mali", "หอมมะลิ"],
+  ข้าว: ["rice", "jasmine"],
+  silk: ["ไหม", "thai silk", "มัดหมี่"],
+  ไหม: ["silk", "thai-silk"],
+  coffee: ["กาแฟ", "single-origin", "doi-chaang", "ดอยช้าง"],
+  กาแฟ: ["coffee", "single-origin", "ดอยช้าง"],
+  tea: ["ชา", "oolong", "matcha"],
+  ชา: ["tea", "oolong"],
+  herbal: ["สมุนไพร", "wellness", "thai-traditional"],
+  สมุนไพร: ["herbal", "wellness"],
+  ceramic: ["เซรามิค", "celadon", "porcelain", "สังคโลก"],
+  เซรามิค: ["ceramic", "celadon"],
+  rubber: ["ยาง", "latex", "rss", "tsr"],
+  ยาง: ["rubber", "latex"],
+  fabric: ["ผ้า", "textile"],
+  ผ้า: ["fabric", "textile"],
+};
+
+function expandQuery(q: string): string {
+  const lc = q.toLowerCase();
+  const expansions = new Set<string>([lc]);
+  for (const [key, syns] of Object.entries(SYNONYMS)) {
+    if (lc.includes(key.toLowerCase())) {
+      syns.forEach(s => expansions.add(s.toLowerCase()));
+    }
+  }
+  return Array.from(expansions).join(" ");
+}
+
+type ScoredSupplier = MatchedSupplier & {
+  hasTagMatch: boolean;
+  hasCategoryMatch: boolean;
+};
+
 // ─── Score suppliers against parsed query ─────────────────────────────
-function scoreSuppliers(suppliers: Supplier[], parsed: ParsedQuery, query: string): MatchedSupplier[] {
-  const q = query.toLowerCase();
+function scoreSuppliers(suppliers: Supplier[], parsed: ParsedQuery, query: string): ScoredSupplier[] {
+  const q = expandQuery(query); // expand synonyms (shrimp ↔ กุ้ง ↔ prawn etc.)
   const scored = suppliers
     .filter(s => parsed.category === null || s.category === parsed.category)
     .map(s => {
+      const hasCategoryMatch = parsed.category !== null && s.category === parsed.category;
+
       // Score components
       let score = s.performance_score; // base 0-100
       if (s.patrick_circle) score += 15;
-      // tag match bonus
-      const tagMatch = s.tags.some(t => q.includes(t.toLowerCase()));
-      if (tagMatch) score += 20;
+
+      // Product match: bidirectional check
+      // Direction A: any supplier tag/keyword in query (handles Thai compound words)
+      // Direction B: any query token in supplier text (handles English + descriptions)
+      const supplierKeywords = [
+        ...s.tags,
+        s.name,
+        s.name_th ?? "",
+        ...(s.description ?? "").split(/[\s,.\-_/()]+/).filter(w => w.length > 3),
+        ...(s.description_th ?? "").split(/[\s,.\-_/()]+/).filter(w => w.length > 1),
+      ].filter(Boolean).map(k => k.toLowerCase());
+
+      const haystack = supplierKeywords.join(" ");
+      const queryTokens = q.split(/[\s,.\-_/()]+/).filter(t => t.length > 2);
+
+      // Direction A: supplier keyword found in query
+      const dirAMatches = supplierKeywords.filter(k => k.length > 2 && q.includes(k));
+      // Direction B: query token found in supplier haystack
+      const dirBMatches = queryTokens.filter(t => haystack.includes(t));
+
+      const totalMatches = new Set([...dirAMatches, ...dirBMatches]).size;
+      const tagMatch = totalMatches > 0;
+      if (tagMatch) score += 20 + Math.min(totalMatches * 3, 15);
       // verified bonus
       if (s.verified) score += 5;
 
@@ -201,12 +271,56 @@ function scoreSuppliers(suppliers: Supplier[], parsed: ParsedQuery, query: strin
         certs: s.certifications,
         matchReason: reasons.join(" · "),
         confidence,
-      } satisfies MatchedSupplier;
+        hasTagMatch: tagMatch,
+        hasCategoryMatch,
+      } satisfies ScoredSupplier;
     })
     .sort((a, b) => b.score - a.score)
-    .slice(0, 3);
+    .slice(0, 5); // keep top 5 candidates for filtering
 
   return scored;
+}
+
+// Apply strict threshold — return only suppliers that genuinely match
+function filterStrongMatches(
+  scored: ScoredSupplier[],
+  vectorHints: { supplier_id: string; similarity: number }[]
+): { strong: MatchedSupplier[]; weak: MatchedSupplier[] } {
+  const vectorMap = new Map(vectorHints.map(h => [h.supplier_id, h.similarity]));
+
+  const strong: MatchedSupplier[] = [];
+  const weak: MatchedSupplier[] = [];
+
+  for (const s of scored) {
+    const vectorSim = vectorMap.get(s.id) ?? 0;
+    const hasVectorBoost = vectorSim >= 0.45;
+
+    // STRICT: must have actual product/tag match OR strong semantic similarity
+    // patrick_circle + category alone is NOT enough — that's just "any Patrick supplier"
+    const passesQualitative = s.hasTagMatch || hasVectorBoost;
+    const passesQuantitative = s.confidence >= MIN_CONFIDENCE;
+
+    // Strip helper props before returning
+    const clean: MatchedSupplier = {
+      id: s.id,
+      name: s.name,
+      tier: s.tier,
+      patrick_circle: s.patrick_circle,
+      score: s.score,
+      capacity: s.capacity,
+      certs: s.certs,
+      matchReason: s.matchReason,
+      confidence: s.confidence,
+    };
+
+    if (passesQualitative && passesQuantitative) {
+      strong.push(clean);
+    } else {
+      weak.push(clean);
+    }
+  }
+
+  return { strong: strong.slice(0, 3), weak: weak.slice(0, 3) };
 }
 
 // ─── Smart cascade templates (query-specific, not generic) ────────────
@@ -537,8 +651,8 @@ export async function POST(req: NextRequest) {
       supplierSource = "static";
     }
 
-    // Stage 3: Score + match suppliers
-    const matched = scoreSuppliers(suppliers, parsed, query);
+    // Stage 3: Score candidates (top 5)
+    const scored = scoreSuppliers(suppliers, parsed, query);
 
     // Stage 4: Find citations — vector search first, keyword fallback
     const [citations, vectorSupplierHints] = await Promise.all([
@@ -547,20 +661,37 @@ export async function POST(req: NextRequest) {
     ]);
     const usingVectorCitations = citations.some(c => "similarity" in c);
 
-    // Boost supplier scores if vector search found semantic matches
+    // Apply vector boost to scored candidates
     if (vectorSupplierHints.length > 0) {
       const hintMap = new Map(vectorSupplierHints.map(h => [h.supplier_id, h.similarity]));
-      matched.forEach(m => {
+      scored.forEach(m => {
         const boost = hintMap.get(m.id);
         if (boost !== undefined) {
-          m.score += Math.round(boost * 25); // up to +25 pts for vector relevance
+          m.score += Math.round(boost * 25);
           m.confidence = Math.min(m.confidence + boost * 0.1, 0.99);
           if (!m.matchReason.includes("Vector")) {
             m.matchReason = `Vector match ${(boost * 100).toFixed(0)}% · ` + m.matchReason;
           }
         }
       });
-      matched.sort((a, b) => b.score - a.score);
+      scored.sort((a, b) => b.score - a.score);
+    }
+
+    // Apply STRICT THRESHOLD — separate strong vs weak matches
+    const { strong: matched, weak: weakMatches } = filterStrongMatches(scored, vectorSupplierHints);
+    const noMatch = matched.length === 0;
+    const topConfidence = scored[0]?.confidence ?? 0;
+
+    // Build human-readable noMatchReason
+    let noMatchReason: string | null = null;
+    if (noMatch) {
+      if (scored.length === 0) {
+        noMatchReason = parsed.category
+          ? `ไม่พบ supplier ใน category "${parsed.category}" ที่ตรงกับ query นี้`
+          : "ไม่พบ supplier ที่ตรงกับ query นี้ใน Platform";
+      } else {
+        noMatchReason = `เจอ supplier ใกล้เคียง ${scored.length} รายแต่ confidence สูงสุด ${(topConfidence * 100).toFixed(0)}% — ต่ำกว่า threshold ${(MIN_CONFIDENCE * 100).toFixed(0)}% (ไม่ตรง product/tag จริง)`;
+      }
     }
 
     // Stage 5: Generate reasoning + cascade with Gemini (smart fallback if quota exceeded)
@@ -569,10 +700,32 @@ export async function POST(req: NextRequest) {
     // Stage 6: Detect supply gaps → Patrick Opportunities
     const opportunities = detectOpportunities(cascade, suppliers, parsed, matched);
 
+    // Stage 7: Log search for acquisition intelligence (best-effort, async, non-blocking)
+    void logSearch({
+      query_text: query,
+      side: "demand",
+      parsed_category: parsed.category,
+      parsed_product: parsed.product?.slice(0, 200),
+      parsed_destination: parsed.region,
+      parsed_quantity: parsed.quantity,
+      language: parsed.language,
+      matched_count: matched.length,
+      top_confidence: topConfidence,
+      no_match: noMatch,
+      meta: {
+        weak_match_count: weakMatches.length,
+        used_vector: usingVectorCitations,
+        vector_hints: vectorSupplierHints.length,
+      },
+    });
+
     return NextResponse.json({
       query,
       parsed,
       matched,
+      weakMatches,
+      noMatch,
+      noMatchReason,
       citations,
       reasoning,
       cascade,
@@ -587,6 +740,9 @@ export async function POST(req: NextRequest) {
         usingVectorSearch: usingVectorCitations,
         vectorSupplierHints: vectorSupplierHints.length,
         opportunityCount: opportunities.length,
+        topConfidence,
+        threshold: MIN_CONFIDENCE,
+        searchLogged: true,
       },
     });
   } catch (err) {

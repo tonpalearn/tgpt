@@ -79,6 +79,9 @@ type ApiResponse = {
   query: string;
   parsed: { category: string | null; product: string; language: "th" | "en" };
   matched: MatchedSupplier[];
+  weakMatches: MatchedSupplier[];
+  noMatch: boolean;
+  noMatchReason: string | null;
   citations: Citation[];
   reasoning: string;
   cascade: DemandNode[];
@@ -93,6 +96,9 @@ type ApiResponse = {
     usingVectorSearch?: boolean;
     vectorSupplierHints?: number;
     opportunityCount?: number;
+    topConfidence?: number;
+    threshold?: number;
+    searchLogged?: boolean;
   };
 };
 
@@ -451,10 +457,73 @@ export default function DemoPage() {
                     </Link>
                   </motion.div>
                 ))}
-                {apiData && apiData.matched.length === 0 && (
-                  <div className="md:col-span-3 card p-6 text-center text-ink-muted">
-                    ไม่พบ supplier ที่ match — ลอง query อื่น หรือเพิ่ม supplier ใน database
-                  </div>
+                {apiData && apiData.noMatch && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="md:col-span-3 card p-6 bg-gradient-to-br from-rose-50 to-amber-50 border-2 border-rose-300 space-y-4"
+                  >
+                    <div className="flex items-start gap-4">
+                      <span className="text-4xl shrink-0">🚫</span>
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-bold text-rose-900 text-lg">ไม่พบ Match ที่ใช่</h3>
+                          <span className="px-2 py-0.5 bg-rose-500 text-white rounded-full text-[10px] font-bold">
+                            HONEST RESULT
+                          </span>
+                        </div>
+                        <p className="text-sm text-rose-800 leading-snug">
+                          {apiData.noMatchReason ?? "ไม่พบ supplier ที่ตรงตาม query นี้ใน Platform"}
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs pt-2">
+                          <div className="rounded-lg p-2 bg-white border border-rose-200">
+                            <div className="text-[10px] uppercase tracking-wider text-rose-700 font-bold">Threshold</div>
+                            <div className="font-mono font-bold text-ink">≥ {((apiData.meta.threshold ?? 0.55) * 100).toFixed(0)}%</div>
+                          </div>
+                          <div className="rounded-lg p-2 bg-white border border-rose-200">
+                            <div className="text-[10px] uppercase tracking-wider text-rose-700 font-bold">Top Confidence</div>
+                            <div className="font-mono font-bold text-ink">{((apiData.meta.topConfidence ?? 0) * 100).toFixed(0)}%</div>
+                          </div>
+                          <div className="rounded-lg p-2 bg-white border border-rose-200">
+                            <div className="text-[10px] uppercase tracking-wider text-rose-700 font-bold">Pool Searched</div>
+                            <div className="font-mono font-bold text-ink">{apiData.meta.supplierCount} suppliers</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Acquisition logged confirmation */}
+                    <div className="rounded-2xl p-3 bg-amber-100 border border-amber-300 flex items-start gap-3">
+                      <span className="text-2xl shrink-0">📊</span>
+                      <div className="flex-1">
+                        <div className="font-semibold text-amber-900 text-sm">Search logged for Patrick</div>
+                        <p className="text-xs text-amber-800 mt-1 leading-snug">
+                          Query นี้ถูกบันทึกใน <code className="px-1 py-0.5 bg-amber-200 rounded font-mono">search_queries</code> table —
+                          ถ้ามีคนค้นหาซ้ำๆ ในหมวดเดียวกัน จะปรากฏใน <strong>Acquisition Targets</strong> ให้ Patrick เห็นว่าควรไปหา connection เพิ่ม
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Show weak matches if any (transparent, not pretending they fit) */}
+                    {apiData.weakMatches && apiData.weakMatches.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="text-xs uppercase tracking-wider text-ink-muted font-bold pt-2">
+                          Suppliers ที่ใกล้เคียง (ไม่ผ่าน threshold — ไม่ recommend)
+                        </div>
+                        <div className="space-y-1.5">
+                          {apiData.weakMatches.slice(0, 3).map(w => (
+                            <div key={w.id} className="flex items-center justify-between text-xs rounded-lg p-2 bg-white/60 border border-stone-200">
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-ink truncate">{w.name}</div>
+                                <div className="text-[10px] text-ink-muted">{w.tier} · {w.matchReason}</div>
+                              </div>
+                              <span className="font-mono text-rose-600 font-bold ml-2">{(w.confidence * 100).toFixed(0)}%</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
                 )}
               </div>
             </motion.section>
