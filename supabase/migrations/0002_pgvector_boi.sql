@@ -12,7 +12,7 @@ create table if not exists boi_documents (
   hs_code         text,
   year            int,
   relevant_for    text[] default '{}',
-  embedding       vector(768),             -- Google text-embedding-004 (768 dims)
+  embedding       vector(3072),             -- gemini-embedding-001 (3072 dims)
   created_at      timestamptz default now(),
   updated_at      timestamptz default now()
 );
@@ -27,7 +27,7 @@ create index if not exists boi_documents_embedding_idx
 -- Store embeddings for supplier descriptions (used in semantic matching)
 create table if not exists supplier_embeddings (
   supplier_id     text primary key references suppliers(id) on delete cascade,
-  embedding       vector(768),
+  embedding       vector(3072),
   embedded_text   text not null,           -- The text that was embedded (for debugging)
   updated_at      timestamptz default now()
 );
@@ -39,7 +39,7 @@ create index if not exists supplier_embeddings_idx
 
 -- ─── RPC: match_boi_documents ─────────────────────────────────────────────────
 create or replace function match_boi_documents(
-  query_embedding   vector(768),
+  query_embedding   vector(3072),
   match_threshold   float    default 0.4,
   match_count       int      default 3
 )
@@ -68,7 +68,7 @@ $$;
 
 -- ─── RPC: match_suppliers ────────────────────────────────────────────────────
 create or replace function match_suppliers(
-  query_embedding   vector(768),
+  query_embedding   vector(3072),
   match_threshold   float    default 0.3,
   match_count       int      default 5
 )

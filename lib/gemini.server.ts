@@ -1,9 +1,6 @@
 import "server-only";
 import { getServerEnv, hasGeminiKey } from "./env.server";
 
-// Google text-embedding-004: 768 dims, free with Gemini API key
-const GEMINI_EMBED_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent";
 
 /**
  * Server-only Gemini client.
@@ -13,7 +10,11 @@ const GEMINI_EMBED_URL =
  */
 
 const GEMINI_FLASH_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+
+// gemini-embedding-001: 3072 dims (as of 2025)
+const GEMINI_EMBED_URL =
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent";
 
 export interface GeminiCallOptions {
   systemPrompt: string;
@@ -41,8 +42,8 @@ export async function embedText(text: string): Promise<number[] | null> {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "models/text-embedding-004",
-        content: { parts: [{ text: text.slice(0, 2048) }] }, // API max 2048 tokens
+        model: "models/gemini-embedding-001",
+        content: { parts: [{ text: text.slice(0, 2048) }] },
       }),
       cache: "no-store",
     });
