@@ -61,6 +61,18 @@ type DemandNode = {
   icon: string;
   color: "amber" | "sky" | "emerald" | "rose";
   parent?: string;
+  serviceDomain?: string;
+};
+
+type Opportunity = {
+  id: string;
+  domain: string;
+  label: string;
+  detail: string;
+  icon: string;
+  urgency: "critical" | "high" | "medium";
+  patrickAction: string;
+  estimatedDealSize?: string;
 };
 
 type ApiResponse = {
@@ -70,6 +82,7 @@ type ApiResponse = {
   citations: Citation[];
   reasoning: string;
   cascade: DemandNode[];
+  opportunities: Opportunity[];
   meta: {
     totalMs: number;
     parseLatencyMs: number;
@@ -79,6 +92,7 @@ type ApiResponse = {
     usingMockGemini: boolean;
     usingVectorSearch?: boolean;
     vectorSupplierHints?: number;
+    opportunityCount?: number;
   };
 };
 
@@ -580,6 +594,94 @@ export default function DemoPage() {
                     (logistics, training partnership, B2G data)
                   </p>
                 </motion.div>
+              </div>
+            </motion.section>
+          )}
+
+          {/* ── Patrick Opportunity Alerts ──────────────────────────────── */}
+          {apiData?.opportunities && apiData.opportunities.length > 0 && showCascade && (
+            <motion.section
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="space-y-4"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-amber-200"></div>
+                <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border-2 border-amber-300 rounded-full">
+                  <span className="text-xl">👑</span>
+                  <span className="font-bold text-amber-900 text-sm">Patrick — Connection Opportunities</span>
+                  <span className="px-2 py-0.5 bg-amber-500 text-white rounded-full text-xs font-bold">
+                    {apiData.opportunities.length} gaps
+                  </span>
+                </div>
+                <div className="flex-1 h-px bg-amber-200"></div>
+              </div>
+
+              <div className="card p-4 bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200">
+                <p className="text-sm text-amber-800 mb-4 leading-relaxed">
+                  ระบบวิเคราะห์ Cascade แล้วพบ <strong>{apiData.opportunities.length} service domains</strong> ที่ Demand มีแต่ยังไม่มี Supply ใน Platform —
+                  {" "}<span className="font-semibold">นี่คือโอกาสที่ Patrick ควรหา Connection เพิ่ม</span>
+                </p>
+
+                <div className="space-y-3">
+                  {apiData.opportunities.map((opp, i) => {
+                    const urgencyStyle = {
+                      critical: "bg-red-50 border-red-300 text-red-900",
+                      high: "bg-orange-50 border-orange-300 text-orange-900",
+                      medium: "bg-yellow-50 border-yellow-200 text-yellow-900",
+                    }[opp.urgency];
+                    const urgencyBadge = {
+                      critical: "bg-red-500 text-white",
+                      high: "bg-orange-500 text-white",
+                      medium: "bg-yellow-400 text-yellow-900",
+                    }[opp.urgency];
+                    const urgencyLabel = {
+                      critical: "CRITICAL",
+                      high: "HIGH",
+                      medium: "MEDIUM",
+                    }[opp.urgency];
+
+                    return (
+                      <motion.div
+                        key={opp.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.08 }}
+                        className={`rounded-2xl p-4 border-2 ${urgencyStyle}`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <span className="text-2xl shrink-0 mt-0.5">{opp.icon}</span>
+                          <div className="flex-1 min-w-0 space-y-2">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-bold text-sm">{opp.label}</span>
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${urgencyBadge}`}>
+                                {urgencyLabel}
+                              </span>
+                            </div>
+                            <p className="text-xs opacity-80 leading-snug">{opp.detail}</p>
+                            <div className="rounded-xl p-3 bg-white/60 border border-current/20 space-y-1">
+                              <div className="text-[11px] font-semibold opacity-70 uppercase tracking-wide">👑 Patrick Action</div>
+                              <p className="text-xs font-medium leading-snug">{opp.patrickAction}</p>
+                              {opp.estimatedDealSize && (
+                                <div className="text-[11px] text-green-700 font-semibold mt-1">
+                                  💰 Est. deal size: {opp.estimatedDealSize}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-amber-200 text-center">
+                  <p className="text-xs text-amber-700">
+                    Platform จะ monetize ทุก service ด้วย <strong>referral fee + subscription</strong> —
+                    {" "}ยิ่ง Patrick เพิ่ม connection ยิ่ง deal ปิดได้เร็วและมี recurring revenue
+                  </p>
+                </div>
               </div>
             </motion.section>
           )}
