@@ -438,6 +438,17 @@ export default function DemoPage() {
                         className={i === 0 ? "h-full bg-amber-500" : "h-full bg-sage-500"}
                       />
                     </div>
+                    {/* Open Deal Room CTA */}
+                    <Link
+                      href={`/deal-room?supplier=${encodeURIComponent(s.id)}&query=${encodeURIComponent(apiData?.query ?? "")}&product=${encodeURIComponent(apiData?.parsed.product ?? "")}`}
+                      className={`block text-center mt-2 px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                        i === 0
+                          ? "bg-amber-500 text-white hover:bg-amber-600"
+                          : "bg-ink text-cream hover:bg-sage-900"
+                      }`}
+                    >
+                      🤝 เปิด Deal Room →
+                    </Link>
                   </motion.div>
                 ))}
                 {apiData && apiData.matched.length === 0 && (
