@@ -173,8 +173,8 @@ const WHEEL = [
     textColor: "text-amber-700",
     bgLight: "bg-amber-50",
     border: "border-amber-300",
-    gives: ["Technology — build + maintain platform", "Product thinking + UX/PM", "2 เดือน full-time execution", "Phase 0 Discovery ฟรี (cover เอง)", "Long-term commitment (4yr vest)"],
-    gets: ["Service fee ฿500K (ลดจาก ฿600K market)", "Equity 12% (4yr/1yr cliff)", "Revenue Share 3% × 36 เดือน", "Stage 2: CTO + ฿180K/เดือน"],
+    gives: ["Technology — build + maintain platform", "Product thinking + UX/PM", "2 เดือน full-time MVP execution", "Phase 0 Tech Discovery ฟรี (cover เอง)", "Long-term commitment ผ่าน earn-in"],
+    gets: ["Service fee ฿500K (Stage 1, milestone-based)", "Equity earn-in 0% → 6% → 9% → 12%", "RS 2% × 36mo (gated ≥฿100K/mo, cap ฿10M)", "Stage 2: CTO + ฿180K/เดือน"],
   },
   {
     id: "supplier",
@@ -202,72 +202,109 @@ const WHEEL = [
   },
 ];
 
-// ─── 3 Requests (เปลี่ยนจาก "The Ask") ────────────────────────────────────────
-// บุญชัย: "ขอ 6 อย่าง พร้อม deadline... รุ่นใหญ่อ่านแล้วรู้สึก ถูก list ทำการบ้าน"
-const REQUESTS = [
+// ─── 3 Decision Choices (decisive, professional) ──────────────────────────────
+const CHOICES = [
   {
-    num: "01",
-    title: "ฟังที่ผมเสนอ",
-    body: "อ่าน slide ทั้งหมด · ลอง simulate · คุยกับครอบครัว/ที่ปรึกษา\nแล้วบอกผมว่าผม **พลาดอะไร** — ผมไม่กลัวคำวิจารณ์ ผมกลัวการไม่ได้เรียน",
-    color: "border-rose-300 bg-rose-50",
-    badgeColor: "bg-rose-500",
-  },
-  {
-    num: "02",
-    title: "ถ้าพี่เห็นว่าใช้ได้ — เริ่ม Phase 0 ก่อน (2 สัปดาห์, ฿0)",
-    body: "ผม cover เอง · สัมภาษณ์ supplier 5 คน + buyer 5 คน จาก network ของพี่\nถ้า Phase 0 ดี → เซ็น Term Sheet → เริ่ม M1 ฿200K · ถ้าไม่ใช่ → ไม่เสีย ฿1",
-    color: "border-amber-300 bg-amber-50",
+    label: "✅ GO",
+    headline: "เห็นด้วยกับ proposal นี้",
+    items: [
+      "เซ็น Term Sheet 3 ฉบับ",
+      "Phase 0 เริ่มสัปดาห์หน้า (฿0)",
+      "M1 kick-off Week 2 (฿200K)",
+      "MVP launch Week 8",
+    ],
+    color: "border-amber-400 bg-gradient-to-b from-amber-50 to-cream",
     badgeColor: "bg-amber-500",
+    badgeText: "text-ink",
   },
   {
-    num: "03",
-    title: "ถ้าไม่ใช่ตอนนี้",
-    body: "ขอคำแนะนำว่าผมควร **ปรับยังไง** หรือ ใครที่พี่คิดว่าผมควรไปคุย\nผมเรียนจากพี่ได้แม้ไม่ได้ลงทุนด้วยกัน",
-    color: "border-sage-300 bg-sage-50",
+    label: "🔄 ADJUST",
+    headline: "อยากปรับบางจุดก่อนตัดสิน",
+    items: [
+      "Term ที่อยากแก้ — บอกได้เลย",
+      "ผม revise ภายใน 3 วัน",
+      "Re-review meeting ภายใน 1 สัปดาห์",
+      "Decision หลัง revise",
+    ],
+    color: "border-sage-400 bg-gradient-to-b from-sage-50 to-cream",
     badgeColor: "bg-sage-500",
+    badgeText: "text-white",
+  },
+  {
+    label: "🚫 NO-GO",
+    headline: "ไม่ใช่ตอนนี้ / ไม่ใช่ผม",
+    items: [
+      "ขอบคุณที่ให้โอกาสพิจารณา",
+      "Stage 0 work เป็นของพี่ (free)",
+      "ผมแนะนำ developer คนอื่นได้",
+      "ความสัมพันธ์ยังคงดี",
+    ],
+    color: "border-rose-300 bg-gradient-to-b from-rose-50 to-cream",
+    badgeColor: "bg-rose-500",
+    badgeText: "text-white",
   },
 ];
 
-// ─── 3 Promises (commitment ที่จับต้องได้) ─────────────────────────────────────
-const PROMISES = [
+// ─── 5 Professional Commitments (toned down) ──────────────────────────────────
+const COMMITMENTS = [
   {
-    num: "01",
-    title: "ผมจะทำงานเหมือน Patrick Group เป็นบริษัทผมเอง",
-    body: "ทุก decision · ทุก commit · ทุก hire — คิดเหมือนเงินผมอยู่ในนั้น\nไม่ใช่ project — เป็น ownership",
+    icon: "🎯",
+    title: "Quality Standards",
+    what: "Production-grade code · TypeScript strict · test coverage ≥ 70%",
+    detail: "ใช้ pattern + tool ที่ proven · ไม่ใช่ exotic",
   },
   {
-    num: "02",
-    title: "ทุก decision ที่กระทบ brand พี่ — ผมถามก่อนเสมอ",
-    body: "Brand voice · pricing · partnership · public communication\nไม่มี surprise · ไม่มี \"ผมตัดสินไปแล้ว\"",
+    icon: "📅",
+    title: "Delivery Discipline",
+    what: "Milestone date เป็นสัญญา · ส่งล่าช้า → adjust scope ไม่ใช่ delay",
+    detail: "Weekly demo + bi-weekly Patrick sync",
   },
   {
-    num: "03",
-    title: "ถ้าพี่บอกหยุด — ผมหยุดทันที",
-    body: "IP ทุกอย่างเป็นของพี่ตั้งแต่ M1 onwards\nNotion docs · code repo · supplier list — อยู่ใน hand พี่ตลอด",
+    icon: "🔍",
+    title: "Brand Respect",
+    what: "ทุก decision ที่กระทบ Patrick Group brand → Patrick approve ก่อน",
+    detail: "Tone, pricing, partnership, public communication ทั้งหมด",
+  },
+  {
+    icon: "🤝",
+    title: "Long-term Mindset",
+    what: "ทำงานเหมือน Patrick Group เป็นบริษัทผมเอง",
+    detail: "Decision คิดยาว · optimize relationship ไม่ใช่ Stage 1 fee",
+  },
+  {
+    icon: "🛡️",
+    title: "Patrick's Protection",
+    what: "IP transfer ทุก milestone · daily push · backup pool",
+    detail: "ถ้าผมไม่อยู่ พี่ continuity ได้",
   },
 ];
 
-// ─── Worst Case + Patrick's Protection (Anant) ────────────────────────────────
+// ─── Worst Case + Patrick's Protection (no "refund 50%") ──────────────────────
 const WORST_CASES = [
   {
-    case: "M1 ส่งมอบไม่ดี",
+    case: "M1 ส่งมอบไม่ผ่าน Patrick approval",
+    loss: "฿0",
+    mitigation: "ผม rework ฟรี — ไม่นับเป็น M2 work · M1 payment hold จนกว่าจะผ่าน",
+  },
+  {
+    case: "Patrick stop หลัง M1",
     loss: "฿200,000",
-    mitigation: "พี่ได้ code + spec ใช้ต่อกับทีมอื่นได้ · ผม refund 50% เป็น option ที่พี่เลือก",
+    mitigation: "พี่ได้ code + spec + Phase 0 docs · IP transfer to NewCo เรียบร้อย",
   },
   {
-    case: "M2 หา supplier ไม่ได้",
+    case: "Patrick stop หลัง M2",
     loss: "+ ฿150,000",
-    mitigation: "พี่หยุดได้ทันที ไม่จ่าย M3 · ผม pivot to consulting deliverable · IP ทุกอย่างยังเป็นของพี่",
+    mitigation: "พี่ได้ทั้งหมดที่ build แล้ว · ไม่จ่าย M3 · Toni เขียน handover doc",
   },
   {
-    case: "M3 ไม่มี deal ปิดได้",
-    loss: "+ ฿150,000",
-    mitigation: "ผมทำ post-mortem report ฟรี · วิเคราะห์ว่าทำไมไม่ work + recommendation",
-  },
-  {
-    case: "Toni หายไปกลางทาง",
+    case: "Toni หาย / สิ้นสุดสัญญาก่อนครบ",
     loss: "฿0 (เสียเวลาพี่)",
-    mitigation: "Code ใน repo ของพี่ตลอด · push daily · Notion docs · successor brief 5 หน้า",
+    mitigation: "Code daily push · Notion ของพี่ตลอด · successor brief 5 หน้า · backup dev pool",
+  },
+  {
+    case: "MVP launch แต่ไม่มี deal ปิด",
+    loss: "฿500K used",
+    mitigation: "Patrick decide NO-GO Stage 2 · Earn-In Gate 1 ไม่ trigger · clean exit",
   },
 ];
 
@@ -278,85 +315,136 @@ export default function PatrickPitchPage() {
     <main className="min-h-screen bg-cream">
       <div className="container-soft py-10 space-y-14">
 
-        {/* ── Cover (Heart-First — Boonchai's reframe) ──────────────────── */}
+        {/* ── Cover (Tech Partnership Proposal — Confident Humility) ────── */}
         <div className="text-center space-y-4 py-8">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
-            ขอเสนอด้วยความเคารพ · {new Date().toLocaleDateString("th-TH", { year: "numeric", month: "long", day: "numeric" })}
+            Tech Partnership Proposal · {new Date().toLocaleDateString("th-TH", { year: "numeric", month: "long", day: "numeric" })}
           </div>
           <h1 className="text-4xl md:text-5xl font-semibold text-ink leading-tight">
-            พี่ Patrick ครับ —<br />
-            <span className="text-sage-600">ขอบคุณที่ให้โอกาสผม</span>
+            ThailandGPT<br />
+            <span className="text-sage-600">Connection Gateway Platform</span>
           </h1>
           <p className="text-ink-muted text-lg max-w-2xl mx-auto">
-            ThailandGPT — ข้อเสนอเพื่อพิจารณา<br />
-            <span className="italic">ไม่มี deadline · ไม่มีแรงกดดัน · ขอความเห็นเป็นหลัก</span>
+            ตามที่พี่ Patrick ประกาศหา technical partner —<br />
+            นี่คือสิ่งที่ผมเสนอ <span className="italic">scope, term, timeline</span>
+          </p>
+          <p className="text-sm text-ink-muted/80 max-w-2xl mx-auto italic">
+            Earn-In model · Tech-focused scope · Performance-aligned compensation
           </p>
           <div className="flex justify-center gap-3 flex-wrap pt-2">
-            <Link href="#why" className="btn-primary">ทำไมต้องเป็นพี่ →</Link>
-            <Link href="#promises" className="btn-secondary">ผมสัญญา 3 อย่าง</Link>
+            <Link href="#division" className="btn-primary">Division of Labor →</Link>
+            <Link href="#earnin" className="btn-secondary">Earn-In Equity</Link>
           </div>
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════ */}
-        {/* WHY PATRICK — Heart-First Anchor (NEW)                          */}
+        {/* DIVISION OF LABOR — Patrick (business) vs Toni (tech)            */}
         {/* ═══════════════════════════════════════════════════════════════ */}
-        <section id="why" className="space-y-5">
+        <section id="division" className="space-y-5">
           <div className="text-center">
-            <h2 className="text-2xl font-semibold text-ink">ทำไมต้องเป็นพี่ Patrick</h2>
-            <p className="text-ink-muted mt-1 italic">ก่อนผมเล่าเรื่อง project — ผมขอเล่าเรื่องพี่ก่อน</p>
+            <h2 className="text-2xl font-semibold text-ink">Division of Labor — ใครทำอะไร</h2>
+            <p className="text-ink-muted mt-1 italic">ชัดเจน ไม่ overlap · Patrick = business · Toni = tech</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              {
-                num: "01",
-                title: "Network ที่เงินซื้อไม่ได้",
-                body: "20 ปีที่พี่สร้างความสัมพันธ์ทั่วโลก — FIFA, Real Madrid, Alibaba\nไม่มีใครใน Thailand ที่มีในระดับนี้ · นี่คือ moat",
-              },
-              {
-                num: "02",
-                title: "Vision ที่ไม่ใช่แค่ profit",
-                body: "พี่พูดเสมอว่า \"Curated Excellence\" — quality มากกว่า quantity\nผมเห็น Patrick Group เป็น gateway Thailand → Global",
-              },
-              {
-                num: "03",
-                title: "Trust ที่ผมไว้วางใจกลับ",
-                body: "พี่ทำให้ผมรู้สึกไม่ใช่ \"ผู้บริหาร\" แต่เป็น \"พี่\"\nนี่หายากในวงการ",
-              },
-            ].map((r) => (
-              <div key={r.num} className="card p-6 border-2 border-amber-200 bg-gradient-to-b from-cream to-amber-50/30 space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-lg font-bold">
-                  {r.num}
-                </div>
-                <h3 className="font-semibold text-ink text-lg leading-snug">{r.title}</h3>
-                <div className="w-12 h-0.5 bg-amber-500"></div>
-                {r.body.split("\n").map((line, i) => (
-                  <p key={i} className="text-sm text-ink-soft leading-relaxed">{line}</p>
-                ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="card p-6 border-2 border-amber-300 bg-gradient-to-b from-amber-50 to-cream space-y-3">
+              <div className="text-center pb-2 border-b border-amber-200">
+                <span className="text-2xl">👑</span>
+                <h3 className="font-bold text-ink text-lg">Patrick — Business Leadership</h3>
               </div>
-            ))}
-          </div>
-          <div className="card p-5 bg-ink text-amber-200 text-center">
-            <div className="text-base italic">
-              &ldquo;ผมไม่ได้เลือก investor — ผมเลือกคนที่ผมอยากเดินด้วยกัน 10 ปี&rdquo;
+              <ul className="space-y-2 text-sm text-ink-soft">
+                {[
+                  "Vision · Strategic direction",
+                  "Network — supplier + buyer intro",
+                  "Brand · public communication",
+                  "MOU · partnership · G2G",
+                  "Pricing · commission policy",
+                  "Hiring decision (Stage 2)",
+                  "Capital allocation",
+                  "Final approval ทุก major decision",
+                ].map(item => (
+                  <li key={item} className="flex gap-2">
+                    <span className="text-amber-600 shrink-0">✓</span>{item}
+                  </li>
+                ))}
+              </ul>
             </div>
+            <div className="card p-6 border-2 border-sky-300 bg-gradient-to-b from-sky-50 to-cream space-y-3">
+              <div className="text-center pb-2 border-b border-sky-200">
+                <span className="text-2xl">💻</span>
+                <h3 className="font-bold text-ink text-lg">Toni — Tech Execution</h3>
+              </div>
+              <ul className="space-y-2 text-sm text-ink-soft">
+                {[
+                  "Tech architecture · stack",
+                  "Full-stack build (Next.js + Supabase)",
+                  "Database schema · API design",
+                  "UI/UX design + implementation",
+                  "DevOps · deployment · monitoring",
+                  "Security + PDPA technical compliance",
+                  "Hire + manage tech contractor",
+                  "Sprint execution · weekly demo",
+                ].map(item => (
+                  <li key={item} className="flex gap-2">
+                    <span className="text-sky-600 shrink-0">✓</span>{item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <div className="card p-4 bg-ink text-amber-300 text-center text-sm font-medium">
+            ผมไม่ commit หา supplier หรือ deal — นั่นเป็น domain ของพี่ที่ผมเคารพ
           </div>
         </section>
 
         {/* ═══════════════════════════════════════════════════════════════ */}
-        {/* PHASE 0 — DISCOVERY SPRINT (Anant's recommendation, NEW)        */}
+        {/* EARN-IN EQUITY MODEL                                             */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        <section id="earnin" className="space-y-5">
+          <div className="text-center">
+            <h2 className="text-2xl font-semibold text-ink">Equity — Earn-In Model</h2>
+            <p className="text-ink-muted mt-1 italic">เริ่ม 0% · earn ขึ้นตาม commitment ที่พิสูจน์ · cap table สะอาด</p>
+          </div>
+          <div className="space-y-3">
+            {[
+              { gate: "Day 1", equity: "0%", cond: "Sign 3 term sheets · No equity granted yet", why: "Toni ยังไม่มี skin in the game · Patrick risk = 0", color: "border-stone-300 bg-stone-50" },
+              { gate: "Gate 1", equity: "+6%", cond: "M3 complete + Patrick GO Stage 2", why: "หลัง MVP ส่งมอบ + Patrick ตัดสิน continue → Toni ได้ 6%", color: "border-amber-300 bg-amber-50" },
+              { gate: "Gate 2", equity: "+3% (=9%)", cond: "Stage 2 — 12 เดือน full-time complete", why: "เป็น CTO เต็มตัว 12 เดือน → top up ถึง 9%", color: "border-amber-400 bg-amber-100" },
+              { gate: "Gate 3", equity: "+3% (=12%)", cond: "Stage 2 — 24 เดือน full-time complete", why: "Long-term commit ครบ 2 ปี → ได้ full 12%", color: "border-emerald-400 bg-emerald-50" },
+            ].map((g, i) => (
+              <div key={g.gate} className={`card p-4 border-2 ${g.color} grid grid-cols-12 gap-3 items-center`}>
+                <div className="col-span-2 text-center">
+                  <div className="text-xs font-semibold text-ink-muted">{g.gate}</div>
+                  <div className="text-2xl font-bold text-ink mt-1">{g.equity}</div>
+                </div>
+                <div className="col-span-5">
+                  <div className="text-sm font-semibold text-ink">{g.cond}</div>
+                </div>
+                <div className="col-span-5 text-xs text-ink-soft italic border-l-2 border-stone-300 pl-3">
+                  {g.why}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="card p-3 bg-amber-100 text-ink text-center text-sm">
+            Vest 4 ปี, cliff 1 ปี · ถ้า Toni ออก → keep ที่ vested · earn-in หยุด
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* PHASE 0 — TECH DISCOVERY (tech-only, no business overlap)       */}
         {/* ═══════════════════════════════════════════════════════════════ */}
         <section id="phase0" className="space-y-5">
           <div className="text-center">
-            <h2 className="text-2xl font-semibold text-ink">Phase 0 — Discovery Sprint</h2>
-            <p className="text-ink-muted mt-1 italic">2 สัปดาห์ · พี่จ่าย ฿0 · ผม cover เอง — เพื่อ confidence ก่อนใช้เงินพี่</p>
+            <h2 className="text-2xl font-semibold text-ink">Phase 0 — Tech Discovery (1 สัปดาห์, ฿0)</h2>
+            <p className="text-ink-muted mt-1 italic">Tech-only scope · ไม่ overlap กับ business domain ของพี่</p>
           </div>
           <div className="card p-6 space-y-4 bg-gradient-to-br from-amber-50 to-cream border-2 border-amber-200">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
-                { num: "1", what: "ฟังพี่ก่อน", detail: "1 ชม. กับพี่ — ฟัง vision จริง vs ที่ผม assume", why: "ผม adjust ทุกอย่างตามที่พี่บอก ไม่ใช่ที่ผมคิด" },
-                { num: "2", what: "สัมภาษณ์ Buyer 5 คน", detail: "1 ชม./คน × 5 คน จาก network ของพี่", why: "อะไรคือ pain — ที่ platform ต้องแก้" },
-                { num: "3", what: "สัมภาษณ์ Supplier 5 คน", detail: "1 ชม./คน × 5 คน จาก Patrick&apos;s Circle", why: "อะไรที่ supplier ต้องการ — เพื่อจ่าย commission" },
-                { num: "4", what: "สรุป + Adjust MVP Scope", detail: "10-page report สำหรับพี่ approve", why: "Pivot ก่อน build — Patrick&apos;s risk ลง 70%" },
+                { num: "1", what: "Architecture Spike", detail: "Stack rationale · monolith vs microservice · build vs buy", why: "Output: Architecture Decision Record (5 หน้า)" },
+                { num: "2", what: "Database + API Design", detail: "Schema · ER diagram · OpenAPI contract", why: "Output: Schema doc + API spec ที่ team คนถัดไปใช้ต่อได้" },
+                { num: "3", what: "Security + PDPA Framework", detail: "Auth flow · data retention · consent UX · audit log", why: "Output: Security checklist + compliance gap analysis" },
+                { num: "4", what: "Cost + Capacity Projection", detail: "Infra cost Stage 1/2/3 · scaling threshold · vendor lock-in", why: "Output: Cost spreadsheet + recommendation" },
               ].map((s) => (
                 <div key={s.num} className="flex gap-3 items-start">
                   <div className="w-9 h-9 rounded-xl bg-amber-500 text-white font-bold flex items-center justify-center shrink-0">
@@ -371,7 +459,7 @@ export default function PatrickPitchPage() {
               ))}
             </div>
             <div className="border-t border-amber-200 pt-3 text-center text-sm text-amber-800 font-medium">
-              ผม cover cost เอง · พี่จ่าย ฿0 · ได้ confidence ก่อนตัดสินใจ ฿500K
+              ผมไม่สัมภาษณ์ supplier/buyer — นั่นเป็นงานของพี่ · ผมทำ tech decision ที่พี่ใช้ตัดสิน scope
             </div>
           </div>
         </section>
@@ -405,29 +493,29 @@ export default function PatrickPitchPage() {
         </section>
 
         {/* ═══════════════════════════════════════════════════════════════ */}
-        {/* 3 REQUESTS (replaces THE ASK — Boonchai's reframe)              */}
+        {/* 3 DECISION CHOICES (decisive, professional)                      */}
         {/* ═══════════════════════════════════════════════════════════════ */}
-        <section id="requests" className="space-y-5">
+        <section id="decision" className="space-y-5">
           <div className="text-center">
-            <h2 className="text-2xl font-semibold text-ink">ขอความกรุณา 3 อย่าง — เมื่อพี่พร้อม</h2>
-            <p className="text-ink-muted mt-1 italic">ไม่มี deadline · ไม่มี pressure · ขอความเห็นเป็นหลัก</p>
+            <h2 className="text-2xl font-semibold text-ink">ขั้นตอนตัดสินใจ — 3 ทางเลือก</h2>
+            <p className="text-ink-muted mt-1 italic">ผม respect ทุก decision · ไม่มี pressure</p>
           </div>
-          <div className="space-y-3">
-            {REQUESTS.map(r => (
-              <div key={r.num} className={`card p-5 border-2 ${r.color} flex gap-4 items-start`}>
-                <div className={`w-14 h-14 rounded-2xl ${r.badgeColor} text-white text-xl font-bold flex items-center justify-center shrink-0`}>
-                  {r.num}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {CHOICES.map(c => (
+              <div key={c.label} className={`card p-0 border-2 ${c.color} overflow-hidden`}>
+                <div className={`${c.badgeColor} ${c.badgeText} px-4 py-3 text-center font-bold text-lg`}>
+                  {c.label}
                 </div>
-                <div className="flex-1 space-y-1">
-                  <div className="font-semibold text-ink text-lg">{r.title}</div>
-                  {r.body.split("\n").map((line, i) => {
-                    const parts = line.split("**");
-                    return (
-                      <p key={i} className="text-sm text-ink-soft leading-relaxed">
-                        {parts.map((part, j) => j % 2 === 1 ? <strong key={j} className="text-ink">{part}</strong> : part)}
-                      </p>
-                    );
-                  })}
+                <div className="p-5 space-y-3">
+                  <div className="text-sm italic text-ink text-center font-semibold">{c.headline}</div>
+                  <div className="w-12 h-0.5 bg-stone-300 mx-auto"></div>
+                  <ul className="space-y-2 text-sm text-ink-soft">
+                    {c.items.map(item => (
+                      <li key={item} className="flex gap-2">
+                        <span className="text-stone-400 shrink-0">•</span>{item}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
             ))}
@@ -739,48 +827,57 @@ export default function PatrickPitchPage() {
         </section>
 
         {/* ═══════════════════════════════════════════════════════════════ */}
-        {/* 3 PROMISES — Closing Commitment (Boonchai's reframe)            */}
+        {/* COMMITMENTS (professional standards, not slogans)                */}
         {/* ═══════════════════════════════════════════════════════════════ */}
-        <section id="promises" className="space-y-5">
+        <section id="commitments" className="space-y-5">
           <div className="text-center">
-            <h2 className="text-2xl font-semibold text-ink">ผมสัญญา 3 อย่างกับพี่</h2>
-            <p className="text-ink-muted mt-1 italic">ไม่ใช่ buzzword · เป็น commitment ที่จับต้องได้</p>
+            <h2 className="text-2xl font-semibold text-ink">Commitment — ถ้า Patrick GO</h2>
+            <p className="text-ink-muted mt-1 italic">Professional standards · ไม่ใช่ slogans</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {PROMISES.map(p => (
-              <div key={p.num} className="card p-6 bg-ink text-cream border-2 border-amber-500/30 space-y-3">
-                <div className="w-14 h-14 rounded-2xl bg-amber-500 text-ink text-xl font-bold flex items-center justify-center">
-                  {p.num}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {COMMITMENTS.map(c => (
+              <div key={c.title} className="card p-5 border border-stone-200 space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-amber-500 text-white flex items-center justify-center text-xl">
+                    {c.icon}
+                  </div>
+                  <h3 className="font-semibold text-ink">{c.title}</h3>
                 </div>
-                <h3 className="font-semibold text-amber-300 text-base leading-snug">{p.title}</h3>
-                <div className="w-12 h-0.5 bg-amber-500"></div>
-                {p.body.split("\n").map((line, i) => (
-                  <p key={i} className="text-sm text-cream/80 italic leading-relaxed">{line}</p>
-                ))}
+                <p className="text-sm text-ink-soft leading-relaxed">{c.what}</p>
+                <div className="text-xs text-ink-muted italic border-t border-stone-100 pt-2">
+                  {c.detail}
+                </div>
               </div>
             ))}
           </div>
         </section>
 
         {/* ═══════════════════════════════════════════════════════════════ */}
-        {/* CLOSING — Heart-First Final Words                                */}
+        {/* CLOSING — Professional, decisive                                 */}
         {/* ═══════════════════════════════════════════════════════════════ */}
         <section className="card p-10 bg-gradient-to-br from-ink to-sage-900 text-cream text-center space-y-6">
           <h2 className="text-3xl md:text-4xl font-semibold text-amber-300">
-            ขอบคุณครับ พี่ Patrick
+            พร้อมเริ่มเมื่อพี่พร้อม
           </h2>
-          <p className="text-lg text-cream/80">ที่ฟังผมจนถึงหน้าสุดท้าย</p>
+          <p className="text-lg text-cream/80 italic">
+            Tech Partnership · Earn-In Model · Performance-Aligned
+          </p>
           <div className="w-24 h-0.5 bg-amber-500 mx-auto"></div>
-          <div className="space-y-2 italic text-cream/90 text-base md:text-lg">
-            <p>ผมไม่ได้มาขอเงิน — ผมมาขอ <span className="text-amber-300 font-semibold">ความสัมพันธ์</span></p>
-            <p>ผมไม่ได้มาขายของ — ผมมาเสนอ <span className="text-amber-300 font-semibold">ทางเดิน</span></p>
-            <p>ผมไม่ได้มาเป็น vendor — ผมมาเป็น <span className="text-amber-300 font-semibold">ลูกศิษย์</span></p>
+          <div className="max-w-2xl mx-auto space-y-2 text-left">
+            <p className="text-amber-300 font-semibold mb-2 text-center">ข้อเสนอใน 3 บรรทัด:</p>
+            <div className="card p-4 bg-ink/50 space-y-2 text-sm md:text-base">
+              <p><span className="text-amber-400 font-bold mr-2">1.</span>฿500K cash · 2 เดือน MVP build · cost-plus transparent</p>
+              <p><span className="text-amber-400 font-bold mr-2">2.</span>Equity earn-in: 0% → 6% → 9% → 12% ตาม commitment</p>
+              <p><span className="text-amber-400 font-bold mr-2">3.</span>RS 2% (gated ≥฿100K/mo) · cap ฿10M Active + ฿2.5M Tail</p>
+            </div>
           </div>
           <div className="card p-5 bg-ink/50 border border-amber-500/30 max-w-2xl mx-auto">
-            <p className="font-semibold text-amber-300">ถ้าพี่เห็นว่าใช้ได้ — ผมจะเดินด้วยกัน 10 ปี</p>
-            <p className="text-sm text-cream/70 italic mt-1">ถ้าไม่ใช่ — ผมยังขอบคุณที่ให้โอกาส</p>
+            <p className="font-semibold text-amber-300">พี่ตัดสินใจเมื่อพร้อม · ไม่มี deadline จากผม</p>
+            <p className="text-sm text-cream/70 mt-2">
+              ติดต่อ: <span className="text-amber-300">ckawin1184@gmail.com</span>
+            </p>
           </div>
-          <p className="text-xs text-cream/50">ด้วยความเคารพ · Toni</p>
+          <p className="text-xs text-cream/50">Toni — Senior Tech Partner</p>
         </section>
 
         {/* ── Navigation ────────────────────────────────────────────────── */}
