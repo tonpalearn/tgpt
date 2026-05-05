@@ -31,7 +31,7 @@ select
   count(*) filter (where no_match)    as no_match_count,
   round(avg(top_confidence)::numeric, 2) as avg_top_confidence,
   max(created_at)                     as last_searched,
-  array_agg(distinct query_text order by query_text)[1:5] as sample_queries
+  (array_agg(distinct query_text order by query_text))[1:5] as sample_queries
 from search_queries
 where parsed_category is not null
 group by parsed_category, parsed_product, parsed_destination
