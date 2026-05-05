@@ -7,6 +7,7 @@ const NAV = [
   { label: "Commission", href: "/reports/commission", icon: "📊" },
   { label: "Break-Even", href: "/reports/breakeven", icon: "🎯" },
   { label: "โมเดล", href: "/reports/model", icon: "💼" },
+  { label: "Patrick Pitch", href: "/present/patrick", icon: "👑" },
 ];
 
 export function Header() {
