@@ -31,94 +31,54 @@ const ROUTER_STAGES: RouterStage[] = [
   { id: "verify", step: "5", model: "Rule engine", task: "Verify cert + tier", cost: 0, duration: 300, reason: "No LLM — deterministic rules" },
 ];
 
-// ─── Mock Suppliers (the matched results) ─────────────────────────────────
-const MATCHED_SUPPLIERS = [
-  {
-    id: "sup-001",
-    name: "สวนทุเรียนคุณวิชัย — จันทบุรี",
-    tier: "Patrick's Circle",
-    score: 96,
-    badge: "👑",
-    capacity: "120 ตัน/ปี",
-    certs: ["GAP", "GlobalG.A.P.", "FDA"],
-    matchReason: "Capacity ครอบคลุม · GAP + GlobalG.A.P. ครบสำหรับ EU/ME · เคยส่งออก UAE 3 ครั้ง",
-    confidence: 0.94,
-  },
-  {
-    id: "sup-007",
-    name: "Premium Orchard Group — ระยอง",
-    tier: "Top Performer",
-    score: 82,
-    badge: "🏆",
-    capacity: "80 ตัน/ปี",
-    certs: ["GAP", "FDA"],
-    matchReason: "Capacity พอดี · ส่งออก Singapore + HK เป็นหลัก · ใหม่กับ GCC market",
-    confidence: 0.81,
-  },
-  {
-    id: "sup-012",
-    name: "Eastern Thai Fruit Co-op — ตราด",
-    tier: "Reliable",
-    score: 67,
-    badge: "⭐",
-    capacity: "200 ตัน/ปี",
-    certs: ["GAP"],
-    matchReason: "Capacity เกินพอ · price competitive · ไม่มี GlobalG.A.P. (อาจจำเป็นสำหรับ Dubai HNW)",
-    confidence: 0.65,
-  },
-];
+// ─── Types matching API response ──────────────────────────────────────────
+type MatchedSupplier = {
+  id: string;
+  name: string;
+  tier: string;
+  patrick_circle: boolean;
+  score: number;
+  capacity: string;
+  certs: string[];
+  matchReason: string;
+  confidence: number;
+};
 
-// ─── BOI / Customs RAG data ───────────────────────────────────────────────
-const BOI_CITATIONS = [
-  {
-    source: "BOI",
-    title: "Thailand Durian Export Statistics 2024",
-    snippet: "Thailand exported 928,000 tons of fresh durian in 2024, valued at $4.65B USD — with UAE imports growing 47% YoY.",
-    url: "boi.go.th/exports/2024/durian",
-    confidence: 0.96,
-  },
-  {
-    source: "กรมศุลกากร",
-    title: "Customs HS Code 0810.60 — Durian",
-    snippet: "Top destinations 2024: China (62%), Hong Kong (14%), UAE (8%, +47%), South Korea (5%), Indonesia (3%).",
-    url: "customs.go.th/hs/081060",
-    confidence: 0.98,
-  },
-  {
-    source: "DITP",
-    title: "Middle East Premium Fruit Demand Report Q4 2024",
-    snippet: "GCC HNW market premium fruit segment grew 38% YoY — Monthong commands $18-24/kg retail in Dubai luxury supermarkets.",
-    url: "ditp.go.th/reports/me-fruit-2024",
-    confidence: 0.91,
-  },
-];
+type Citation = {
+  source: string;
+  title: string;
+  snippet: string;
+  url: string;
+  hs_code?: string;
+  year?: number;
+};
 
-// ─── Cascading Demand Layers ──────────────────────────────────────────────
 type DemandNode = {
   id: string;
   layer: number;
   label: string;
   detail: string;
   icon: string;
-  color: string;
+  color: "amber" | "sky" | "emerald" | "rose";
   parent?: string;
 };
 
-const DEMAND_TREE: DemandNode[] = [
-  // Layer 1 — Primary
-  { id: "L1", layer: 1, label: "Dubai HNW Buyer", detail: "50 ตัน Monthong · Q3 2569 · $20K/ton", icon: "🌍", color: "amber" },
-  // Layer 2 — Direct services
-  { id: "L2-1", layer: 2, label: "Cold-Chain Forwarder", detail: "GCC corridor · -18°C · 3 reefer containers", icon: "📦", color: "sky", parent: "L1" },
-  { id: "L2-2", layer: 2, label: "Export Insurance", detail: "Marine cargo · perishable rider · ฿180K premium", icon: "🛡️", color: "sky", parent: "L1" },
-  { id: "L2-3", layer: 2, label: "FX Hedge", detail: "USD/THB forward 90-day · ฿35M notional", icon: "💱", color: "sky", parent: "L1" },
-  // Layer 3 — Skills + secondary
-  { id: "L3-1", layer: 3, label: "EN-AR Coordinator", detail: "Bilingual export coord · จันทบุรี-based · 6-mo contract", icon: "👨‍💼", color: "emerald", parent: "L2-1" },
-  { id: "L3-2", layer: 3, label: "Quality Inspector", detail: "Brix ≥ 32 · maturity grading · GCC compliance", icon: "🔍", color: "emerald", parent: "L2-1" },
-  { id: "L3-3", layer: 3, label: "Halal Certification Agent", detail: "GCC-recognized halal cert · 14-day turnaround", icon: "📋", color: "emerald", parent: "L2-2" },
-  // Layer 4 — Education / training
-  { id: "L4-1", layer: 4, label: "Vocational EN Trainer", detail: "Export English program · จันทบุรี Vocational · 80 students", icon: "🏫", color: "rose", parent: "L3-1" },
-  { id: "L4-2", layer: 4, label: "GAP Audit Training", detail: "120 farmers in district · 6-month certification path", icon: "🌱", color: "rose", parent: "L3-2" },
-];
+type ApiResponse = {
+  query: string;
+  parsed: { category: string | null; product: string; language: "th" | "en" };
+  matched: MatchedSupplier[];
+  citations: Citation[];
+  reasoning: string;
+  cascade: DemandNode[];
+  meta: {
+    totalMs: number;
+    parseLatencyMs: number;
+    cascadeLatencyMs: number;
+    supplierSource: "supabase" | "static";
+    supplierCount: number;
+    usingMockGemini: boolean;
+  };
+};
 
 // ─── Helper components ────────────────────────────────────────────────────
 function StatusDot({ active, done }: { active: boolean; done: boolean }) {
@@ -148,6 +108,8 @@ export default function DemoPage() {
   const [showCitations, setShowCitations] = useState(false);
   const [showCascade, setShowCascade] = useState(false);
   const [streamedText, setStreamedText] = useState("");
+  const [apiData, setApiData] = useState<ApiResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
   const totalCost = ROUTER_STAGES.reduce((sum, s) => sum + s.cost, 0);
@@ -162,31 +124,62 @@ export default function DemoPage() {
     setShowCitations(false);
     setShowCascade(false);
     setStreamedText("");
+    setApiData(null);
+    setError(null);
 
-    // Run each stage sequentially
-    for (let i = 0; i < ROUTER_STAGES.length; i++) {
+    // Kick off REAL API call in parallel with stage animation
+    const apiPromise = fetch("/api/match", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: q }),
+    })
+      .then(async r => {
+        if (!r.ok) throw new Error(`API ${r.status}`);
+        return (await r.json()) as ApiResponse;
+      });
+
+    // Animate stages 1-3 (parse, embed, RAG) — these are fast
+    for (let i = 0; i < 3; i++) {
       setActiveStage(i);
       await new Promise(r => setTimeout(r, ROUTER_STAGES[i].duration));
       setCompletedStages(prev => new Set([...prev, i]));
     }
 
+    // Wait for API to complete (Gemini reasoning)
+    setActiveStage(3); // Claude/reasoning stage
+    let data: ApiResponse;
+    try {
+      data = await apiPromise;
+      setApiData(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unknown error");
+      setRunning(false);
+      setActiveStage(-1);
+      return;
+    }
+    setCompletedStages(prev => new Set([...prev, 3]));
+
+    // Stage 5: verify
+    setActiveStage(4);
+    await new Promise(r => setTimeout(r, ROUTER_STAGES[4].duration));
+    setCompletedStages(prev => new Set([...prev, 4]));
+
     setActiveStage(-1);
     setShowResults(true);
 
-    // Stream reasoning text
-    const reasoning = `พบ supplier ที่ verified แล้ว 3 ราย — รวม Patrick's Circle 1 ราย\n\nMatch หลัก: สวนคุณวิชัย (จันทบุรี) — capacity 120 ตัน + GAP + GlobalG.A.P. + เคยส่ง UAE 3 ครั้ง\nMatch รอง: Premium Orchard (ระยอง) + Eastern Thai Co-op (ตราด)\n\nแหล่งข้อมูล: BOI 2024, กรมศุลกากร HS 0810.60, DITP ME report Q4`;
+    // Stream the REAL reasoning from API
+    const reasoning = data.reasoning || "ไม่มีข้อมูล reasoning";
     for (let i = 0; i <= reasoning.length; i++) {
       setStreamedText(reasoning.slice(0, i));
-      await new Promise(r => setTimeout(r, 12));
+      await new Promise(r => setTimeout(r, 8));
     }
 
-    await new Promise(r => setTimeout(r, 300));
+    await new Promise(r => setTimeout(r, 200));
     setShowCitations(true);
-    await new Promise(r => setTimeout(r, 800));
+    await new Promise(r => setTimeout(r, 600));
     setShowCascade(true);
     setRunning(false);
 
-    // scroll to results
     setTimeout(() => {
       resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 100);
@@ -321,6 +314,35 @@ export default function DemoPage() {
               💡 Single-model GPT-4 baseline ≈ <span className="font-mono">$0.012</span> · Router saves <span className="text-amber-300 font-bold">71%</span>
             </div>
           </div>
+
+          {/* Real API meta info (when available) */}
+          {apiData?.meta && (
+            <div className="card p-3 bg-emerald-50 border border-emerald-200 flex items-center justify-between flex-wrap gap-2 text-xs">
+              <div className="flex items-center gap-3">
+                <span className="px-2 py-0.5 bg-emerald-500 text-white rounded-full font-bold">LIVE API</span>
+                <span className="text-emerald-800">
+                  Total: <span className="font-mono font-bold">{apiData.meta.totalMs}ms</span>
+                </span>
+                <span className="text-emerald-700">
+                  Suppliers: <span className="font-mono">{apiData.meta.supplierCount}</span> ({apiData.meta.supplierSource})
+                </span>
+                <span className="text-emerald-700">
+                  Gemini: <span className="font-mono">{apiData.meta.usingMockGemini ? "MOCK (no API key)" : "REAL"}</span>
+                </span>
+              </div>
+              {apiData.parsed.category && (
+                <span className="text-emerald-700">
+                  Parsed → <span className="font-bold">{apiData.parsed.category}</span> · {apiData.parsed.language.toUpperCase()}
+                </span>
+              )}
+            </div>
+          )}
+
+          {error && (
+            <div className="card p-4 bg-rose-50 border-2 border-rose-300 text-rose-800 text-sm">
+              ⚠️ API Error: {error}
+            </div>
+          )}
         </section>
 
         <div ref={resultsRef}></div>
@@ -352,9 +374,9 @@ export default function DemoPage() {
                 </pre>
               </div>
 
-              {/* Supplier cards */}
+              {/* Supplier cards (from real API) */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {MATCHED_SUPPLIERS.map((s, i) => (
+                {(apiData?.matched ?? []).map((s, i) => (
                   <motion.div
                     key={s.id}
                     initial={{ opacity: 0, x: -20 }}
@@ -365,7 +387,7 @@ export default function DemoPage() {
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-2xl">{s.badge}</span>
+                      <span className="text-2xl">{s.patrick_circle ? "👑" : i === 1 ? "🏆" : "⭐"}</span>
                       <div className="text-right">
                         <div className="text-[10px] uppercase tracking-wider text-ink-muted">Confidence</div>
                         <div className="text-lg font-bold text-emerald-600">{(s.confidence * 100).toFixed(0)}%</div>
@@ -399,6 +421,11 @@ export default function DemoPage() {
                     </div>
                   </motion.div>
                 ))}
+                {apiData && apiData.matched.length === 0 && (
+                  <div className="md:col-span-3 card p-6 text-center text-ink-muted">
+                    ไม่พบ supplier ที่ match — ลอง query อื่น หรือเพิ่ม supplier ใน database
+                  </div>
+                )}
               </div>
             </motion.section>
           )}
@@ -419,7 +446,7 @@ export default function DemoPage() {
                 </p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {BOI_CITATIONS.map((c, i) => (
+                {(apiData?.citations ?? []).map((c, i) => (
                   <motion.div
                     key={c.url}
                     initial={{ opacity: 0, y: 20 }}
@@ -431,9 +458,11 @@ export default function DemoPage() {
                       <span className="px-2 py-1 bg-sky-100 text-sky-700 text-[10px] font-bold rounded-full uppercase tracking-wider">
                         📄 {c.source}
                       </span>
-                      <span className="text-xs text-emerald-600 font-mono font-semibold">
-                        {(c.confidence * 100).toFixed(0)}%
-                      </span>
+                      {c.year && (
+                        <span className="text-xs text-ink-muted font-mono">
+                          {c.year}
+                        </span>
+                      )}
                     </div>
                     <h3 className="font-semibold text-sm text-ink leading-tight">{c.title}</h3>
                     <blockquote className="text-xs text-ink-soft italic border-l-2 border-sky-300 pl-3 leading-relaxed">
@@ -441,6 +470,7 @@ export default function DemoPage() {
                     </blockquote>
                     <div className="text-[10px] font-mono text-ink-muted truncate flex items-center gap-1">
                       🔗 {c.url}
+                      {c.hs_code && <span className="ml-2 text-amber-600">HS: {c.hs_code}</span>}
                     </div>
                   </motion.div>
                 ))}
@@ -468,7 +498,7 @@ export default function DemoPage() {
               <div className="card p-6 bg-gradient-to-br from-ink via-sage-900 to-ink text-cream">
                 <div className="space-y-6">
                   {[1, 2, 3, 4].map(layer => {
-                    const nodes = DEMAND_TREE.filter(n => n.layer === layer);
+                    const nodes = (apiData?.cascade ?? []).filter(n => n.layer === layer);
                     const layerLabels = {
                       1: { label: "LAYER 1 · Primary Demand", color: "text-amber-300", desc: "ดีลหลัก — buyer ต้องการ" },
                       2: { label: "LAYER 2 · Direct Services", color: "text-sky-300", desc: "บริการที่ตามมาทันที" },
