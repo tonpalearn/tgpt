@@ -1,200 +1,171 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Header } from "@/components/brand/Header";
-import { DemoBadge } from "@/components/brand/DemoBadge";
-import { getDeal, getSupplier } from "@/lib/mock-data.server";
-import { cn, formatUSD } from "@/lib/utils";
+import { Header } from "@/components/v2/Header";
+import { Footer } from "@/components/v2/Footer";
+import { getDeal, getDealEvents, getSupplier, getBuyer } from "@/lib/db/queries";
+import { formatRate } from "@/lib/commission";
+import type { DealStatus } from "@/lib/db/types";
 
-const STATUS_FLOW: Array<{ key: string; label: string; th: string }> = [
-  { key: "opened", label: "Opened", th: "เปิด" },
-  { key: "negotiating", label: "Negotiating", th: "เจรจา" },
-  { key: "agreed", label: "Agreed", th: "ตกลง" },
-  { key: "verifying", label: "Verifying", th: "ตรวจสอบ" },
-  { key: "paid", label: "Paid", th: "ชำระ" },
-  { key: "closed", label: "Closed", th: "ปิด" },
+export const dynamic = "force-dynamic";
+
+const STATUS_STEPS: { key: DealStatus; th: string }[] = [
+  { key: "opened",      th: "เปิดดีล" },
+  { key: "negotiating", th: "ต่อรอง" },
+  { key: "agreed",      th: "ตกลง" },
+  { key: "verifying",   th: "ตรวจสอบ" },
+  { key: "paid",        th: "ชำระเงิน" },
+  { key: "closed",      th: "สำเร็จ" },
 ];
+
+function stepIndex(status: DealStatus): number {
+  const i = STATUS_STEPS.findIndex((s) => s.key === status);
+  return i >= 0 ? i : 0;
+}
+
+const ACTOR_STYLE: Record<string, string> = {
+  buyer:    "bg-clay-100 text-clay-600",
+  supplier: "bg-sage-100 text-sage-700",
+  platform: "bg-stone-100 text-stone-600",
+  patrick:  "bg-sky-soft text-sky-deep",
+};
+
+const ACTOR_LABEL: Record<string, string> = {
+  buyer: "ผู้ซื้อ", supplier: "ซัพพลาย", platform: "ระบบ", patrick: "Patrick",
+};
 
 export default async function DealRoomPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const deal = getDeal(id);
+  const deal = await getDeal(id).catch(() => null);
   if (!deal) notFound();
-  const supplier = getSupplier(deal.supplierId);
 
-  const currentIdx = STATUS_FLOW.findIndex((s) => s.key === deal.status);
+  const [events, supplier, buyer] = await Promise.all([
+    getDealEvents(deal.id).catch(() => []),
+    getSupplier(deal.supplier_id).catch(() => null),
+    getBuyer(deal.buyer_id).catch(() => null),
+  ]);
+
+  const currentStep = stepIndex(deal.status);
+  const isCancelled = deal.status === "cancelled";
+  const isDisputed = deal.status === "disputed";
 
   return (
     <>
-      <DemoBadge />
       <Header />
-
-      <main className="border-t border-parchment-300 max-w-[1480px] mx-auto px-6 lg:px-12 py-12 lg:py-16">
-        {/* Header strip */}
-        <div className="flex items-baseline justify-between flex-wrap gap-4 mb-10">
-          <div>
-            <Link href={supplier ? `/suppliers/${supplier.id}` : "/"} className="text-[0.65rem] uppercase tracking-[0.22em] font-mono text-ink-muted hover:text-emerald-deep transition-colors">
-              ← {supplier?.businessName ?? "Catalogue"}
+      <main className="pb-24">
+        <section className="bg-white border-b border-stone-100">
+          <div className="container-soft py-8">
+            <Link href="/deals" className="text-sm text-ink-muted hover:text-sage-600 inline-flex items-center gap-1 mb-4">
+              ← กลับไปยังรายการดีล
             </Link>
-            <h1 className="font-display text-display-lg text-ink mt-2 leading-tight" style={{ fontVariationSettings: "'opsz' 144, 'SOFT' 50, 'WONK' 1" }}>
-              Deal Room <span className="text-ink-muted">/ {deal.id}</span>
-            </h1>
-          </div>
-          <div className="text-right">
-            <div className="eyebrow mb-1">Deal value</div>
-            <div className="figure-num font-display text-4xl text-ink" style={{ fontVariationSettings: "'opsz' 144, 'SOFT' 30" }}>
-              {formatUSD(deal.amount)}
+            <div className="flex flex-wrap items-baseline gap-3 mb-2">
+              <span className="font-mono text-sm text-ink-muted">{deal.id}</span>
+              {isCancelled && <span className="pill-stone">ยกเลิกแล้ว</span>}
+              {isDisputed && <span className="pill-clay">⚠ มีข้อพิพาท</span>}
+            </div>
+            <h1 className="text-title font-semibold text-ink">{deal.notes ?? "Deal Room"}</h1>
+            <div className="mt-3 flex flex-wrap gap-6 text-sm text-ink-soft">
+              <div><span className="text-ink-muted">มูลค่า:</span> <span className="font-semibold text-ink">${deal.amount_usd.toLocaleString()}</span></div>
+              <div><span className="text-ink-muted">ค่าธรรมเนียม:</span> <span className="font-semibold text-sage-700">${deal.commission_usd.toLocaleString(undefined, { maximumFractionDigits: 0 })} ({formatRate(deal.commission_rate)})</span></div>
+              <div><span className="text-ink-muted">เริ่ม:</span> {new Date(deal.opened_at).toLocaleDateString("th-TH")}</div>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Status pipeline — Roman numeral steps echo Protocol */}
-        <div className="border border-parchment-300 bg-parchment-50 p-6 lg:p-8 mb-10">
-          <div className="eyebrow mb-5">Pipeline status</div>
-          <ol className="grid grid-cols-2 lg:grid-cols-6 gap-px bg-parchment-300">
-            {STATUS_FLOW.map((s, i) => {
-              const isActive = i === currentIdx;
-              const isPast = i < currentIdx;
-              return (
-                <li
-                  key={s.key}
-                  className={cn(
-                    "p-4 transition-colors duration-300",
-                    isActive ? "bg-emerald-deep text-amber-soft" : isPast ? "bg-emerald-deep/15 text-emerald-deep" : "bg-parchment-50 text-ink-muted"
-                  )}
-                >
-                  <div className="flex items-baseline justify-between mb-1.5">
-                    <span className="font-mono text-xs">{String(i + 1).padStart(2, "0")}</span>
-                    {isActive && <span className="w-1.5 h-1.5 bg-amber-warm rounded-full animate-pulse" />}
-                    {isPast && <span className="text-xs">✓</span>}
-                  </div>
-                  <div className="font-display text-base" style={{ fontVariationSettings: "'opsz' 144, 'SOFT' 50, 'WONK' 1" }}>{s.label}</div>
-                  <div className="text-[0.6rem] uppercase tracking-[0.18em] mt-1 opacity-70 font-mono">{s.th}</div>
-                </li>
-              );
-            })}
-          </ol>
-        </div>
-
-        <div className="grid lg:grid-cols-[1fr_360px] gap-10">
-          {/* Left — chat thread mock */}
-          <div>
-            <div className="eyebrow mb-4">Deal-room thread (mock)</div>
-            <div className="space-y-4">
-              <Message
-                from="buyer"
-                name={deal.buyerName}
-                country={deal.buyerCountry}
-                time="08:42"
-                text="Confirmed: 50 tonnes premium Monthong, FOB Laem Chabang, monthly Apr–Jul. Need GAP + GlobalG.A.P. cert pack for compliance review."
-              />
-              <Message
-                from="supplier"
-                name={supplier?.businessName ?? ""}
-                country="TH"
-                time="09:15"
-                text="ยืนยันได้ครับ ส่ง cert pack ภายใน 24 ชม. ทั้ง GAP และ GlobalG.A.P. valid ถึง 2027 (Q1). ราคา USD 4.80/kg FOB ตามที่คุยไว้ครับ"
-              />
-              <Message
-                from="platform"
-                name="ThailandGPT · Verifier"
-                country="TH"
-                time="11:02"
-                text="Field verification dispatched. Expected confirmation < 48h. Cold-chain capacity flagged at 84% (peak Apr–Aug) — recommend confirming logistics slot now."
-              />
-              <Message
-                from="buyer"
-                name={deal.buyerName}
-                country={deal.buyerCountry}
-                time="14:38"
-                text="Logistics slot via partner forwarder confirmed. Awaiting field verification before LC issuance."
-              />
-            </div>
-
-            <div className="mt-6 border border-parchment-300 p-3 flex items-center gap-3 text-xs text-ink-muted">
-              <span className="font-mono uppercase tracking-wider text-ink-muted shrink-0">»</span>
-              <span className="italic">Demo thread — no real messages are sent.</span>
-            </div>
-          </div>
-
-          {/* Right — sidebar */}
-          <aside className="space-y-6">
-            <div className="border border-ink/85 bg-parchment-50 p-6">
-              <div className="eyebrow mb-3">Counterparty</div>
-              <div className="font-display text-xl text-ink mb-1" style={{ fontVariationSettings: "'opsz' 144, 'SOFT' 50, 'WONK' 1" }}>
-                {deal.buyerName}
-              </div>
-              <div className="text-xs text-ink-muted font-mono mb-5">{deal.buyerCountry} · KYC mock</div>
-
-              <div className="space-y-3 text-sm">
-                <Row k="Product" v={deal.productDescription} />
-                <Row k="Currency" v={deal.currency} />
-                <Row k="Created" v={deal.createdAt} />
-                <Row k="Sign-off" v={deal.patrickSignOff ? "Patrick (high-value)" : "Not required"} />
+        {/* Pipeline */}
+        {!isCancelled && (
+          <section className="container-soft mt-8">
+            <div className="card">
+              <div className="section-eyebrow mb-4">สถานะดีล</div>
+              <div className="grid grid-cols-6 gap-2">
+                {STATUS_STEPS.map((step, i) => {
+                  const done = i < currentStep;
+                  const active = i === currentStep && !isDisputed;
+                  return (
+                    <div key={step.key} className="text-center">
+                      <div className={`relative h-2 rounded-full mb-2 ${
+                        done ? "bg-sage-500" : active ? "bg-clay-400" : "bg-stone-100"
+                      }`}>
+                        {active && <div className="absolute inset-0 rounded-full bg-clay-400 animate-soft-pulse" />}
+                      </div>
+                      <div className={`text-xs ${active ? "font-semibold text-clay-600" : done ? "text-sage-700" : "text-ink-muted"}`}>
+                        {step.th}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
+          </section>
+        )}
 
-            <div className="border border-amber-warm bg-amber-warm/10 p-6">
-              <div className="eyebrow mb-3 text-amber-deep">Patrick&apos;s desk</div>
-              <p className="text-sm text-ink leading-relaxed">
-                {deal.patrickSignOff
-                  ? "This deal exceeds the high-value threshold. Patrick&apos;s sign-off will be requested before payment release."
-                  : "This deal sits below the high-value threshold. Standard close — no Patrick sign-off required."}
-              </p>
+        {/* Two-column: timeline + sidebar */}
+        <section className="container-soft mt-6 grid lg:grid-cols-3 gap-4">
+          {/* Timeline */}
+          <div className="lg:col-span-2">
+            <div className="card">
+              <h2 className="text-lg font-semibold text-ink mb-4">ไทม์ไลน์ ({events.length})</h2>
+              {events.length === 0 ? (
+                <p className="text-sm text-ink-muted">ยังไม่มีกิจกรรม</p>
+              ) : (
+                <div className="space-y-4">
+                  {events.map((ev) => (
+                    <div key={ev.id} className="flex gap-3">
+                      <div className={`shrink-0 w-9 h-9 rounded-2xl flex items-center justify-center text-xs font-semibold ${ACTOR_STYLE[ev.actor] ?? "bg-stone-100"}`}>
+                        {ACTOR_LABEL[ev.actor]?.[0] ?? "?"}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-baseline gap-2 text-xs text-ink-muted mb-0.5">
+                          <span className="font-medium text-ink-soft">{ACTOR_LABEL[ev.actor] ?? ev.actor}</span>
+                          <span>·</span>
+                          <span>{ev.event_type}</span>
+                          <span>·</span>
+                          <span>{new Date(ev.occurred_at).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}</span>
+                        </div>
+                        {ev.message && (
+                          <div className="text-sm text-ink leading-relaxed bg-cream-50 rounded-soft px-3 py-2 inline-block max-w-full">
+                            {ev.message}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
+          </div>
 
-            <div className="text-xs text-ink-muted leading-relaxed">
-              No real escrow, KYC, or payment is wired in Stage 0. Each pipeline stage is a UI demonstration of the closed-loop transaction architecture planned for Stage 2 MVP.
+          {/* Sidebar — counterparties */}
+          <aside className="space-y-4">
+            {supplier && (
+              <Link href={`/suppliers/${supplier.id}`} className="card card-hover block">
+                <div className="section-eyebrow">ซัพพลาย</div>
+                <div className="font-semibold text-ink mt-1">{supplier.name_th ?? supplier.name}</div>
+                <div className="text-xs text-ink-muted mt-1">{supplier.region}</div>
+                <div className="flex flex-wrap gap-1 mt-3">
+                  {supplier.patrick_circle && <span className="pill-sage">⭐ Patrick</span>}
+                  {supplier.verified && <span className="pill-sage">✓ ตรวจสอบ</span>}
+                </div>
+              </Link>
+            )}
+            {buyer && (
+              <div className="card">
+                <div className="section-eyebrow">ผู้ซื้อ</div>
+                <div className="font-semibold text-ink mt-1">{buyer.name}</div>
+                <div className="text-xs text-ink-muted mt-1">{buyer.country} · {buyer.industry}</div>
+                <div className="flex flex-wrap gap-1 mt-3">
+                  {buyer.verified && <span className="pill-sage">✓ ตรวจสอบ</span>}
+                  <span className="pill-stone">{buyer.size}</span>
+                </div>
+              </div>
+            )}
+
+            <div className="card-soft text-center text-xs text-ink-muted">
+              ฟังก์ชันส่งข้อความ + เปลี่ยนสถานะ จะเปิดให้ใช้งานใน Phase C
             </div>
           </aside>
-        </div>
+        </section>
       </main>
+      <Footer />
     </>
-  );
-}
-
-function Row({ k, v }: { k: string; v: string }) {
-  return (
-    <div className="flex items-baseline justify-between gap-3 border-b border-parchment-300 pb-2 last:border-b-0">
-      <span className="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-ink-muted shrink-0">{k}</span>
-      <span className="text-right text-ink">{v}</span>
-    </div>
-  );
-}
-
-function Message({
-  from,
-  name,
-  country,
-  time,
-  text,
-}: {
-  from: "buyer" | "supplier" | "platform";
-  name: string;
-  country: string;
-  time: string;
-  text: string;
-}) {
-  const tone = {
-    buyer: { dot: "bg-amber-warm", label: "Buyer", color: "text-amber-deep", border: "border-amber-warm/40" },
-    supplier: { dot: "bg-emerald-deep", label: "Supplier", color: "text-emerald-deep", border: "border-emerald-deep/30" },
-    platform: { dot: "bg-ink", label: "Platform", color: "text-ink", border: "border-ink/30" },
-  }[from];
-
-  return (
-    <article className={cn("border bg-parchment-50/70 p-5", tone.border)}>
-      <div className="flex items-baseline justify-between mb-2 flex-wrap gap-2">
-        <div className="flex items-center gap-3">
-          <span className={cn("w-2 h-2 rounded-full", tone.dot)} />
-          <span className={cn("font-mono text-[0.65rem] uppercase tracking-[0.2em]", tone.color)}>
-            {tone.label}
-          </span>
-          <span className="font-display text-base text-ink" style={{ fontVariationSettings: "'opsz' 144, 'SOFT' 50, 'WONK' 1" }}>
-            {name}
-          </span>
-          <span className="text-[0.65rem] font-mono text-ink-muted">· {country}</span>
-        </div>
-        <span className="font-mono text-xs text-ink-muted">{time}</span>
-      </div>
-      <p className="text-base leading-relaxed text-ink-soft">{text}</p>
-    </article>
   );
 }
