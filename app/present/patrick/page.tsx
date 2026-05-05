@@ -1,4 +1,5 @@
 import Link from "next/link";
+import InvestmentSimulator from "@/components/v2/InvestmentSimulator";
 
 // ─── Panel personas ───────────────────────────────────────────────────────────
 const PANEL = [
@@ -346,6 +347,19 @@ export default function PatrickPitchPage() {
               ))}
             </div>
           </div>
+        </section>
+
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* INTERACTIVE SIMULATOR                                            */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        <section id="simulator" className="space-y-5">
+          <div className="text-center">
+            <h2 className="text-2xl font-semibold text-ink">ลอง Simulate การลงทุนเอง</h2>
+            <p className="text-ink-muted mt-1">
+              ปรับ Supplier / Buyer / Deal / Commission ดูผล ROI Patrick + ต้นทุนแต่ละ Stage แบบ real-time
+            </p>
+          </div>
+          <InvestmentSimulator />
         </section>
 
         {/* ═══════════════════════════════════════════════════════════════ */}
