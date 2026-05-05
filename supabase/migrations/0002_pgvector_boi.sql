@@ -17,11 +17,10 @@ create table if not exists boi_documents (
   updated_at      timestamptz default now()
 );
 
--- Index for fast cosine similarity search
+-- HNSW index: supports up to 16000 dims (IVFFlat is limited to 2000)
 create index if not exists boi_documents_embedding_idx
   on boi_documents
-  using ivfflat (embedding vector_cosine_ops)
-  with (lists = 50);
+  using hnsw (embedding vector_cosine_ops);
 
 -- ─── Supplier Embeddings Table ────────────────────────────────────────────────
 -- Store embeddings for supplier descriptions (used in semantic matching)
@@ -34,8 +33,7 @@ create table if not exists supplier_embeddings (
 
 create index if not exists supplier_embeddings_idx
   on supplier_embeddings
-  using ivfflat (embedding vector_cosine_ops)
-  with (lists = 20);
+  using hnsw (embedding vector_cosine_ops);
 
 -- ─── RPC: match_boi_documents ─────────────────────────────────────────────────
 create or replace function match_boi_documents(

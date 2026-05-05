@@ -1,4 +1,5 @@
 -- Fix: Change embedding dimensions from 768 → 3072 (gemini-embedding-001)
+-- IVFFlat max = 2000 dims, use HNSW instead (supports up to 16000 dims)
 -- Table is empty so safe to alter column directly
 
 -- boi_documents
@@ -7,8 +8,7 @@ ALTER TABLE boi_documents DROP COLUMN IF EXISTS embedding;
 ALTER TABLE boi_documents ADD COLUMN embedding vector(3072);
 CREATE INDEX boi_documents_embedding_idx
   ON boi_documents
-  USING ivfflat (embedding vector_cosine_ops)
-  WITH (lists = 50);
+  USING hnsw (embedding vector_cosine_ops);
 
 -- supplier_embeddings
 DROP INDEX IF EXISTS supplier_embeddings_idx;
@@ -16,8 +16,7 @@ ALTER TABLE supplier_embeddings DROP COLUMN IF EXISTS embedding;
 ALTER TABLE supplier_embeddings ADD COLUMN embedding vector(3072);
 CREATE INDEX supplier_embeddings_idx
   ON supplier_embeddings
-  USING ivfflat (embedding vector_cosine_ops)
-  WITH (lists = 20);
+  USING hnsw (embedding vector_cosine_ops);
 
 -- Update RPC: match_boi_documents
 DROP FUNCTION IF EXISTS match_boi_documents(vector, float, int);
